@@ -8,7 +8,9 @@
   <style>
     body { background: var(--paper); }
     .dash-wrapper { display:grid; grid-template-columns:240px 1fr; min-height:calc(100vh - 64px); }
-    @media(max-width:768px){ .dash-wrapper{ grid-template-columns:1fr; } .dash-sidebar{ display:none; } }
+    @media(max-width:768px){ .dash-wrapper{ grid-template-columns:1fr; } .dash-sidebar{ display:none; } .dash-sidebar.open{ display:block; position:fixed; inset:0; z-index:150; overflow-y:auto; } }
+    .mobile-dash-toggle{ display:none; position:fixed; bottom:24px; right:24px; width:52px; height:52px; border-radius:50%; background:var(--sage); color:#fff; border:none; cursor:pointer; font-size:22px; box-shadow:0 4px 16px rgba(0,0,0,.2); z-index:100; align-items:center; justify-content:center; }
+    @media(max-width:768px){ .mobile-dash-toggle{ display:flex; } }
 
     /* ── Sidebar ── */
     .dash-sidebar { background:var(--ink); padding:32px 0; }
@@ -95,7 +97,7 @@
 <div class="dash-wrapper">
 
   <!-- ══ SIDEBAR ══ -->
-  <aside class="dash-sidebar">
+  <aside class="dash-sidebar" id="dashSidebar">
     <div class="dash-sidebar-logo">Teacher<span>Hub</span> Admin</div>
 
     <div class="nav-section-label">Overview</div>
@@ -579,5 +581,6 @@
   /* ── Boot ── */
   loadAdminData();
 </script>
+<button class="mobile-dash-toggle" onclick="document.getElementById('dashSidebar').classList.toggle('open')">☰</button>
 </body>
 </html>
