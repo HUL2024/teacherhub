@@ -343,6 +343,7 @@
     document.querySelectorAll('.dash-nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
     if (el) el.classList.add('active');
+    document.getElementById('dashSidebar').classList.remove('open');
   }
 
   /* ── Upload handlers ── */
