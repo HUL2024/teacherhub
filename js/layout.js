@@ -573,6 +573,11 @@ function toggleSignupMenu(e) {
   if (menu) menu.classList.toggle('open');
 }
 
+TH.toggleMobileMenu = () => {
+  const menu = document.getElementById('mobileMenu');
+  if (menu) menu.classList.toggle('open');
+};
+
 TH.closeSignupMenu = () => {
   const menu = document.getElementById('signupMenu');
   if (menu) menu.classList.remove('open');
