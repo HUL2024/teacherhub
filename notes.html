@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Browse and purchase premium teaching notes by subject and grade."/>
+  <title>Teaching Notes Marketplace — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .notes-layout { display:grid; grid-template-columns:260px 1fr; gap:32px; padding:48px 0; }
+    @media(max-width:800px){ .notes-layout{ grid-template-columns:1fr; } }
+
+    .sidebar-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow); margin-bottom:20px; }
+    .sidebar-card h3 { font-size:17px; margin-bottom:18px; }
+    .filter-group { margin-bottom:18px; }
+    .filter-group label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:8px; }
+    .filter-group select, .filter-group input { width:100%; }
+    .filter-group .check-list { display:flex; flex-direction:column; gap:8px; }
+    .check-item { display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; }
+    .check-item input[type=checkbox]{ accent-color:var(--sage); width:15px; height:15px; }
+
+    .notes-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; }
+    .note-card h3 { font-size:17px; margin-bottom:8px; line-height:1.3; }
+    .note-card p  { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+    .note-meta  { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .note-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:14px; border-top:1px solid var(--border); }
+    .note-price { font-family:var(--font-mono); font-size:18px; font-weight:700; color:var(--sage); }
+    .note-downloads { font-size:12px; color:var(--muted); }
+    .note-card { display:flex; flex-direction:column; }
+
+    .results-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+    .results-count { font-size:14px; color:var(--muted); }
+
+    .empty-state { grid-column:1/-1; text-align:center; padding:64px 24px; color:var(--muted); }
+    .empty-state .icon { font-size:48px; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<!-- ── Page Hero ── -->
+<header class="page-hero page-hero--sage">
+  <div class="container">
+    <h1>Teaching Notes Marketplace</h1>
+    <p>Expertly prepared resources for Liberian classrooms — Liberian curriculum aligned</p>
+  </div>
+</header>
+
+<!-- ── Main Layout ── -->
+<div class="container">
+  <div class="notes-layout">
+
+    <!-- Sidebar Filters -->
+    <aside>
+      <div class="sidebar-card">
+        <h3>Filter Notes</h3>
+
+        <div class="filter-group">
+          <label>Search</label>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="text" id="searchInput" placeholder="Search notes…" oninput="renderNotes()"/>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Subject</label>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="text" id="subjectFilter" placeholder="e.g. Mathematics, Biology…" oninput="renderNotes()"/>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Grade</label>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="text" id="gradeFilter" placeholder="e.g. Grade 10, College…" oninput="renderNotes()"/>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Price Range</label>
+          <select id="priceFilter" onchange="renderNotes()">
+            <option value="">Any Price</option>
+            <option value="free">Free</option>
+            <option value="1-100">L$1 – L$100</option>
+            <option value="100-250">L$100 – L$250</option>
+            <option value="250-350">L$250 – L$350</option>
+            <option value="350-99999">L$350 and above</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Show</label>
+          <div class="check-list">
+            <label class="check-item">
+              <input type="checkbox" id="premiumOnly" onchange="renderNotes()"/>
+              Premium only
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn--ghost btn--sm btn--block" onclick="clearFilters()" style="margin-top:8px;border:1px solid var(--border)">Clear Filters</button>
+      </div>
+
+
+    </aside>
+
+    <!-- Notes Grid -->
+    <main>
+      <div class="results-header">
+        <div>
+          <h2 style="font-size:22px" class="section-title">All Teaching Notes</h2>
+          <p class="results-count" id="resultsCount"></p>
+        </div>
+        <select id="sortFilter" onchange="renderNotes()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font-sans);font-size:14px;background:var(--paper)">
+          <option value="popular">Most Popular</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+        </select>
+      </div>
+      <div class="notes-grid" id="notesGrid"></div>
+    </main>
+  </div>
+</div>
+
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let allNotes = [];
+
+  /* ── Convert any Google Drive link to force-download URL ── */
+  function driveDownloadUrl(url) {
+    if (!url) return '#';
+    // Already a direct download link
+    if (url.includes('uc?export=download')) return url;
+    // Extract file ID from share link: /file/d/FILE_ID/view
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) return 'https://drive.google.com/uc?export=download&id=' + match[1];
+    // Fallback — return as-is
+    return url;
+  }
+
+  function getFiltered() {
+    const q     = document.getElementById('searchInput').value.toLowerCase();
+    const subj  = document.getElementById('subjectFilter').value.toLowerCase();
+    const grade = document.getElementById('gradeFilter').value;
+    const price = document.getElementById('priceFilter').value;
+    const prem  = document.getElementById('premiumOnly').checked;
+    const sort  = document.getElementById('sortFilter').value;
+
+    let list = allNotes.filter(n => {
+      if (q     && !n.title.toLowerCase().includes(q) && !(n.subject||'').toLowerCase().includes(q)) return false;
+      if (subj  && !(n.subject||'').toLowerCase().includes(subj)) return false;
+      if (grade && !(n.grade||'').toLowerCase().includes(grade.toLowerCase())) return false;
+      if (prem  && !n.is_premium)     return false;
+      if (price) {
+        if (price === 'free') {
+          if ((n.price||0) !== 0) return false;
+        } else {
+          const [lo, hi] = price.split('-').map(Number);
+          if ((n.price||0) < lo || (n.price||0) > hi) return false;
+        }
+      }
+      return true;
+    });
+
+    if (sort === 'popular')    list.sort((a,b) => (b.downloads||0) - (a.downloads||0));
+    if (sort === 'price-asc')  list.sort((a,b) => (a.price||0) - (b.price||0));
+    if (sort === 'price-desc') list.sort((a,b) => (b.price||0) - (a.price||0));
+
+    return list;
+  }
+
+  function renderNotes() {
+    const list = getFiltered();
+    const grid = document.getElementById('notesGrid');
+    document.getElementById('resultsCount').textContent = list.length + ' note' + (list.length !== 1 ? 's' : '') + ' found';
+
+    if (list.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><h3>No notes found</h3><p>Try adjusting your filters</p></div>';
+      return;
+    }
+
+    grid.innerHTML = list.map(n => {
+      const isFree = !n.price || n.price === 0;
+      const priceLabel = isFree ? '<span style="color:var(--sage);font-family:var(--font-mono);font-size:18px;font-weight:700">Free</span>'
+                                : '<span class="note-price">L$' + n.price + '</span>';
+      const actionBtn = isFree
+        ? '<a href="' + driveDownloadUrl(n.file_url) + '" target="_blank" class="btn btn--primary btn--sm" data-nid="' + n.id + '" onclick="incrementDownload(this.dataset.nid)">Download Free</a>'
+        : '<button class="btn btn--ghost btn--sm" onclick="TH.toast(&quot;Paid notes coming soon! 🚀&quot;)" style="cursor:pointer;opacity:.7;border:1.5px dashed var(--border)">🔒 Coming Soon</button>';
+
+      return (
+        '<article class="card ' + (n.is_premium ? 'card--premium' : '') + ' note-card">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">' +
+            '<div class="note-meta" style="margin-bottom:0">' +
+              '<span class="tag">' + (n.subject||'') + '</span>' +
+              '<span class="tag">' + (n.grade||'') + '</span>' +
+            '</div>' +
+            (n.is_premium ? '<span class="badge badge--premium">⭐ Premium</span>' : '') +
+          '</div>' +
+          '<h3>' + n.title + '</h3>' +
+          '<p>' + (n.preview||'') + '</p>' +
+          '<p class="note-downloads">📥 ' + (n.downloads||0) + ' downloads</p>' +
+          '<div class="note-footer">' +
+            priceLabel +
+            actionBtn +
+          '</div>' +
+        '</article>'
+      );
+    }).join('');
+  }
+
+  function clearFilters() {
+    document.getElementById('searchInput').value   = '';
+    document.getElementById('subjectFilter').value = '';
+    document.getElementById('gradeFilter').value   = '';
+    document.getElementById('priceFilter').value   = '';
+    document.getElementById('premiumOnly').checked = false;
+    renderNotes();
+  }
+
+  /* ── Increment download counter ── */
+  async function incrementDownload(id) {
+    const note = allNotes.find(n => n.id === id);
+    if (!note) return;
+    await db.from('notes').update({ downloads: (note.downloads||0) + 1 }).eq('id', id);
+    note.downloads = (note.downloads||0) + 1;
+  }
+
+  /* ── Open purchase modal for paid notes ── */
+  function openPurchase(btn) {
+    const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+    if (!u) {
+      TH.toast('Please log in to purchase notes');
+      setTimeout(() => TH.openModal('loginModal'), 600);
+      return;
+    }
+    const id    = btn.getAttribute('data-id');
+    const title = btn.getAttribute('data-title');
+    const price = btn.getAttribute('data-price');
+    const url   = btn.getAttribute('data-url');
+
+    // Remove any existing purchase overlay
+    const existing = document.getElementById('purchaseOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'purchaseOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    overlay.innerHTML =
+      '<div style="background:#fff;border-radius:12px;max-width:420px;width:100%;padding:32px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.2)">' +
+        '<button onclick="document.getElementById(&quot;purchaseOverlay&quot;).remove()" style="position:absolute;top:16px;right:16px;border:none;background:none;font-size:22px;cursor:pointer;color:#666;line-height:1">×</button>' +
+        '<h3 style="font-family:var(--font-serif);font-size:22px;margin-bottom:6px">Purchase Note</h3>' +
+        '<p style="font-size:14px;color:var(--muted);margin-bottom:16px">' + title + '</p>' +
+        '<div style="background:var(--cream);border-radius:8px;padding:20px;text-align:center;margin-bottom:20px">' +
+          '<div style="font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--sage)">L$' + price + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:4px">Once-off purchase</div>' +
+        '</div>' +
+        '<div style="background:var(--cream);border-radius:8px;padding:18px;font-size:13px;color:var(--muted);margin-bottom:16px;text-align:center;line-height:2">' +
+          '<strong style="font-size:14px;color:var(--ink)">📱 How to get this note:</strong><br>' +
+          '<span style="font-size:13px">1. Send <strong style="color:var(--sage)">L$' + price + '</strong> via Mobile Money to:</span><br>' +
+          '<span style="font-size:26px;font-weight:700;color:var(--ink);letter-spacing:1px;font-family:var(--font-mono)">0778041008</span><br>' +
+          '<span style="font-size:12px;color:var(--muted)">MTN / Orange Mobile Money</span>' +
+        '</div>' +
+        '<div style="border:1.5px dashed var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--muted);margin-bottom:16px;text-align:center;line-height:1.8">' +
+          '2. After payment, send your <strong>name + payment screenshot</strong> to:<br>' +
+          '<a href="mailto:georgeet028@gmail.com?subject=Note Purchase: ' + title + '&body=I have sent L$' + price + ' mobile money to 0778041008 for the note: ' + title + '. Please send me the download link." style="color:var(--sage);font-weight:700">georgeet028@gmail.com</a><br>' +
+          '<span style="font-size:12px">3. You will receive your download link within <strong>24 hours</strong></span>' +
+        '</div>' +
+        '<a href="mailto:georgeet028@gmail.com?subject=Note Purchase: ' + title + '&body=I have sent L$' + price + ' mobile money to 0778041008 for the note: ' + title + '. Please send me the download link." class="btn btn--primary btn--block">📧 Send Payment Confirmation</a>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+  }
+
+  /* ── Record purchase — called manually by admin after payment confirmed ── */
+  async function recordPurchase(noteId, userId) {
+    const note = allNotes.find(n => n.id === noteId);
+    await db.from('purchases').insert({
+      note_id:     noteId,
+      buyer_id:    userId,
+      buyer_role:  'teacher',
+      amount_paid: note ? note.price : 0,
+    });
+    await incrementDownload(noteId);
+  }
+
+  /* ── Load real notes from Supabase ── */
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('notesGrid').innerHTML =
+      '<div class="empty-state"><p style="color:var(--muted)">Loading notes…</p></div>';
+
+    const { data, error } = await db
+      .from('notes')
+      .select('*')
+      .order('downloads', { ascending: false });
+
+    if (error) {
+      document.getElementById('notesGrid').innerHTML =
+        '<div class="empty-state"><p style="color:var(--muted)">Could not load notes. Please try again.</p></div>';
+      return;
+    }
+
+    allNotes = data || [];
+    renderNotes();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Get in touch with Teacher-Hub — we are here to help."/>
+  <title>Contact Us — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .page-content { max-width: 780px; margin: 0 auto; padding: 56px 24px 80px; }
+    .page-content h1 { font-size: clamp(28px,5vw,42px); font-family: var(--font-serif); margin-bottom: 8px; }
+    .page-content .lead { font-size: 17px; color: var(--muted); margin-bottom: 48px; line-height: 1.7; border-bottom: 1px solid var(--border); padding-bottom: 32px; }
+    .page-content h2 { font-family: var(--font-serif); font-size: 22px; margin: 40px 0 14px; color: var(--ink); }
+    .page-content p  { font-size: 15px; color: var(--muted); line-height: 1.85; margin-bottom: 16px; }
+    .page-content ul { padding-left: 20px; margin-bottom: 16px; }
+    .page-content ul li { font-size: 15px; color: var(--muted); line-height: 1.85; margin-bottom: 8px; }
+    .page-content a  { color: var(--sage); text-decoration: underline; }
+    .info-card { background: var(--cream); border-radius: var(--radius-lg); padding: 28px 32px; margin: 32px 0; border-left: 4px solid var(--sage); }
+    .info-card p { margin-bottom: 0; }
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 20px; margin: 32px 0; }
+    .contact-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; text-align: center; }
+    .contact-item .icon { font-size: 32px; margin-bottom: 12px; }
+    .contact-item h3 { font-size: 15px; font-family: var(--font-serif); margin-bottom: 6px; }
+    .contact-item p { font-size: 13px; margin-bottom: 0; }
+    .contact-item a { font-size: 13px; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 24px; margin: 32px 0; }
+    .team-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; }
+    .team-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--sage); color: #fff; font-family: var(--font-serif); font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+    .team-card h3 { font-size: 16px; margin-bottom: 4px; }
+    .team-card p  { font-size: 13px; margin-bottom: 0; }
+    .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin: 32px 0; }
+    @media(max-width:600px){ .stat-row { grid-template-columns: 1fr 1fr; } }
+    .stat-item { background: var(--ink); color: #fff; border-radius: var(--radius-lg); padding: 24px; text-align: center; }
+    .stat-item .num { font-family: var(--font-serif); font-size: 32px; color: var(--sage-light); }
+    .stat-item .lbl { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 4px; }
+    .last-updated { font-size: 12px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 40px; }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<header class="page-hero page-hero--sage">
+  <div class="container">
+    <h1>Contact Us</h1>
+    <p>We are here to help — reach out any time</p>
+  </div>
+</header>
+
+<div class="page-content">
+  <p class="lead">Whether you have a question about your account, need help posting a job, want to report an issue, or just want to say hello — we are always happy to hear from you.</p>
+
+  <div class="contact-grid">
+    <div class="contact-item">
+      <div class="icon">📧</div>
+      <h3>Email Us</h3>
+      <p>For all general enquiries</p>
+      <a href="mailto:georgeet028@gmail.com">georgeet028@gmail.com</a>
+    </div>
+    <div class="contact-item">
+      <div class="icon">⏱️</div>
+      <h3>Response Time</h3>
+      <p>We aim to respond within</p>
+      <p><strong>24 – 48 hours</strong></p>
+    </div>
+    <div class="contact-item">
+      <div class="icon">📍</div>
+      <h3>Location</h3>
+      <p>Monrovia, Liberia</p>
+      <p>West Africa</p>
+    </div>
+  </div>
+
+  <h2>Frequently Asked Questions</h2>
+
+  <h2 style="font-size:17px;margin-top:24px">How do I create a teacher account?</h2>
+  <p>Click <strong>Sign Up as Teacher</strong> in the navigation bar or footer. Fill in your name, email, and password. You can complete your full profile — qualifications, subjects, CV — from your dashboard after signing up.</p>
+
+  <h2 style="font-size:17px;margin-top:24px">How do I post a job vacancy as a school?</h2>
+  <p>Register your school using the <strong>Register School</strong> link, then log in and go to your School Dashboard. Click <strong>Post a Job</strong> and fill in the details. All job posts are reviewed by our admin team before going live — this usually takes less than 24 hours.</p>
+
+  <h2 style="font-size:17px;margin-top:24px">How do I purchase a teaching note?</h2>
+  <p>Browse the <a href="notes.html">Notes Marketplace</a>, find a note you want, and click <strong>Buy &amp; Download</strong>. Free notes can be downloaded immediately. Paid note payment integration is coming soon — contact us to arrange a purchase in the meantime.</p>
+
+  <h2 style="font-size:17px;margin-top:24px">I found a problem or bug on the site. What should I do?</h2>
+  <p>Please email us at <a href="mailto:georgeet028@gmail.com">georgeet028@gmail.com</a> with a description of the issue, the page it occurred on, and your device or browser if possible. We take all bug reports seriously and will fix issues as quickly as we can.</p>
+
+  <h2 style="font-size:17px;margin-top:24px">Is Teacher-Hub free to use?</h2>
+  <p>Yes — creating a teacher or school account is completely free. Some premium features, such as featured listings and priority placement in the directory, will be available as optional upgrades. Teaching notes may have a small purchase fee set by the platform.</p>
+
+  <div class="info-card">
+    <p>💡 <strong>For urgent matters</strong> — if your account has been compromised or you need immediate assistance, please email us directly at <a href="mailto:georgeet028@gmail.com">georgeet028@gmail.com</a> with the subject line <em>URGENT</em>.</p>
+  </div>
+</div>
+
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>
