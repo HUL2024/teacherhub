@@ -8,8 +8,25 @@
   <style>
     body { background: var(--paper); }
     .dash-wrapper { display:grid; grid-template-columns:240px 1fr; min-height:calc(100vh - 64px); }
-    @media(max-width:768px){ .dash-wrapper{ grid-template-columns:1fr; } .dash-sidebar{ display:none; } .dash-sidebar.open{ display:block; position:fixed; inset:0; z-index:150; overflow-y:auto; } }
-    .mobile-dash-toggle{ display:none; position:fixed; bottom:24px; right:24px; width:52px; height:52px; border-radius:50%; background:var(--sage); color:#fff; border:none; cursor:pointer; font-size:22px; box-shadow:0 4px 16px rgba(0,0,0,.2); z-index:100; align-items:center; justify-content:center; }
+    @media(max-width:768px){ .dash-wrapper{ grid-template-columns:1fr; } .dash-sidebar{ display:none; } }
+
+    /* ── Mobile sidebar slide-in ── */
+    @media(max-width:768px){
+      .dash-sidebar {
+        display:block; position:fixed; top:0; left:0; height:100%; width:240px;
+        z-index:1000; transform:translateX(-100%); transition:transform .25s ease;
+      }
+      .dash-sidebar.open { transform:translateX(0); }
+    }
+
+    /* ── Mobile toggle button ── */
+    .mobile-dash-toggle {
+      display:none;
+      position:fixed; bottom:24px; left:24px; z-index:1100;
+      background:var(--ink); color:#fff; border:none; border-radius:50%;
+      width:48px; height:48px; font-size:20px; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.3); align-items:center; justify-content:center;
+    }
     @media(max-width:768px){ .mobile-dash-toggle{ display:flex; } }
 
     /* ── Sidebar ── */
@@ -581,6 +598,7 @@
   /* ── Boot ── */
   loadAdminData();
 </script>
-<button class="mobile-dash-toggle" onclick="document.getElementById('dashSidebar').classList.toggle('open')">☰</button>
+<button class="mobile-dash-toggle" onclick="(function(){var s=document.getElementById('dashSidebar');s.classList.toggle('open');})()" aria-label="Toggle sidebar">☰</button>
+
 </body>
 </html>
