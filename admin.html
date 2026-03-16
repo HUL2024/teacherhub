@@ -533,8 +533,10 @@
               ? '<span class="dot dot--red"></span>Rejected'
               : '<span class="dot dot--amber"></span>Pending') + '</td>' +
             '<td>' +
+              '<a href="job-detail.html?id=' + j.id + '" target="_blank" class="btn btn--ghost btn--sm">👁 View</a> ' +
               (j.status !== 'approved' ? '<button class="btn btn--primary btn--sm" data-id="' + j.id + '" onclick="approveJob(this)">Approve</button> ' : '') +
               (j.status !== 'rejected' ? '<button class="btn btn--sm" style="border:1.5px solid var(--red);color:var(--red);background:transparent;margin-left:6px" data-id="' + j.id + '" onclick="rejectJob(this)">Reject</button>' : '') +
+              ' <button class="btn btn--sm" style="border:1.5px solid #c83232;color:#c83232;background:transparent;margin-left:6px" data-id="' + j.id + '" onclick="adminDeleteJob(this)">🗑 Delete</button>' +
             '</td>' +
           '</tr>'
         ).join('')
@@ -600,6 +602,16 @@
     const { error } = await db.from('jobs').update({ status: 'approved' }).eq('id', id);
     if (error) { TH.toast('⚠️ Error: ' + error.message); btn.disabled = false; btn.textContent = 'Approve'; return; }
     TH.toast('Job approved ✅');
+    loadAdminData();
+  }
+
+  async function adminDeleteJob(btn) {
+    const id = btn.getAttribute('data-id');
+    if (!confirm('Permanently delete this job? This cannot be undone.')) return;
+    btn.disabled = true;
+    const { error } = await db.from('jobs').delete().eq('id', id);
+    if (error) { TH.toast('⚠️ ' + error.message); btn.disabled = false; return; }
+    TH.toast('Job deleted ✅');
     loadAdminData();
   }
 
