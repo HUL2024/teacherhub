@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Teacher profile on Teacher-Hub"/>
+  <title>Teacher Profile — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body { background:var(--paper); }
+
+    /* ── Cover & Avatar ── */
+    .profile-cover {
+      height: 180px;
+      background: linear-gradient(135deg, #0d2d6e 0%, #1a4fa0 50%, #2d6ea0 100%);
+      position: relative;
+    }
+    .profile-cover-pattern {
+      position:absolute; inset:0;
+      background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,.05) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 20%, rgba(255,255,255,.07) 0%, transparent 50%);
+    }
+    .profile-main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+    .profile-top-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0 32px 28px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .profile-avatar-wrap {
+      position: relative;
+      display: inline-block;
+      margin-top: -50px;
+      margin-bottom: 12px;
+    }
+    .profile-avatar {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      border: 4px solid var(--card-bg);
+      background: var(--sage);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-serif);
+      font-size: 36px;
+      font-weight: 700;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    }
+    .profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .profile-name { font-family:var(--font-serif); font-size:28px; margin-bottom:4px; }
+    .profile-headline { font-size:15px; color:var(--muted); margin-bottom:8px; }
+    .profile-location { font-size:14px; color:var(--muted); display:flex; align-items:center; gap:6px; margin-bottom:16px; }
+    .profile-badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+    .profile-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
+    /* ── Sections ── */
+    .profile-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 16px;
+    }
+    .profile-section h2 {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap:10px;
+    }
+    .about-text { font-size:15px; color:var(--muted); line-height:1.85; }
+
+    /* ── Info grid ── */
+    .info-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:20px; }
+    .info-item { }
+    .info-item .label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:4px; }
+    .info-item .value { font-size:15px; color:var(--ink); font-weight:500; }
+
+    /* ── Subjects ── */
+    .subjects-list { display:flex; gap:8px; flex-wrap:wrap; }
+
+    /* ── Stats bar ── */
+    .profile-stats { display:flex; gap:0; border-top:1px solid var(--border); margin-top:20px; padding-top:16px; flex-wrap:wrap; }
+    .profile-stat { flex:1; text-align:center; min-width:100px; }
+    .profile-stat + .profile-stat { border-left:1px solid var(--border); }
+    .profile-stat .num { font-family:var(--font-serif); font-size:24px; color:var(--sage); }
+    .profile-stat .lbl { font-size:12px; color:var(--muted); margin-top:2px; }
+
+    /* ── CV section ── */
+    .cv-box {
+      display:flex; align-items:center; gap:16px;
+      background:var(--cream); border-radius:var(--radius-lg);
+      padding:18px 22px; border:1px solid var(--border);
+    }
+    .cv-icon { font-size:36px; }
+    .cv-info h4 { font-size:15px; margin-bottom:3px; }
+    .cv-info p  { font-size:13px; color:var(--muted); }
+
+    /* ── Loading skeleton ── */
+    .skeleton { background:var(--border); border-radius:4px; animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Not found ── */
+    .not-found { text-align:center; padding:80px 24px; }
+    .not-found .icon { font-size:56px; margin-bottom:16px; }
+
+    @media(max-width:600px){
+      .profile-top-card { padding:0 16px 24px; }
+      .profile-section  { padding:20px 16px; }
+      .profile-name     { font-size:22px; }
+    }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<div class="profile-cover"><div class="profile-cover-pattern"></div></div>
+
+<div class="profile-main">
+
+  <!-- Top Card -->
+  <div class="profile-top-card" id="topCard">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar" id="profileAvatar">…</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
+      <div>
+        <h1 class="profile-name" id="profileName">Loading…</h1>
+        <p class="profile-headline" id="profileHeadline">Teacher</p>
+        <div class="profile-location"><span>📍</span><span id="profileLocation">—</span></div>
+        <div class="profile-badges" id="profileBadges"></div>
+      </div>
+      <div class="profile-actions" id="profileActions"></div>
+    </div>
+    <div class="profile-stats" id="profileStats"></div>
+  </div>
+
+  <!-- About -->
+  <div class="profile-section" id="sectionAbout" style="display:none">
+    <h2>📝 About</h2>
+    <p class="about-text" id="aboutText"></p>
+  </div>
+
+  <!-- Details -->
+  <div class="profile-section">
+    <h2>🎓 Professional Details</h2>
+    <div class="info-grid" id="detailsGrid">
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+    </div>
+  </div>
+
+  <!-- Subjects -->
+  <div class="profile-section" id="sectionSubjects" style="display:none">
+    <h2>📚 Subjects Taught</h2>
+    <div class="subjects-list" id="subjectsList"></div>
+  </div>
+
+  <!-- CV -->
+  <div class="profile-section" id="sectionCV" style="display:none">
+    <h2>📄 Curriculum Vitae</h2>
+    <div class="cv-box">
+      <div class="cv-icon">📄</div>
+      <div class="cv-info">
+        <h4 id="cvName">CV / Resume</h4>
+        <p>Click to view or download this teacher's CV</p>
+      </div>
+      <a id="cvLink" href="#" target="_blank" class="btn btn--primary btn--sm" style="margin-left:auto">View CV</a>
+    </div>
+  </div>
+
+</div>
+
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+
+  /* ── Get teacher ID from URL ── */
+  const params = new URLSearchParams(window.location.search);
+  const teacherId = params.get('id');
+
+  if (!teacherId) {
+    showNotFound();
+    return;
+  }
+
+  /* ── Fetch profile + teacher_profile ── */
+  const { data: profile, error: pErr } = await db
+    .from('profiles')
+    .select('*')
+    .eq('id', teacherId)
+    .eq('role', 'teacher')
+    .maybeSingle();
+
+  if (pErr || !profile) { showNotFound(); return; }
+
+  const { data: tp } = await db
+    .from('teacher_profiles')
+    .select('*')
+    .eq('user_id', teacherId)
+    .maybeSingle();
+
+  // Also fetch phone from profiles table
+  const phone = profile.phone || '';
+
+  /* ── Set page title ── */
+  document.title = (profile.full_name || 'Teacher') + ' — Teacher-Hub';
+
+  /* ── Avatar ── */
+  const avatarEl = document.getElementById('profileAvatar');
+  if (tp && tp.photo_url) {
+    avatarEl.innerHTML = '<img src="' + tp.photo_url + '" alt="' + (profile.full_name||'') + '"/>';
+  } else {
+    avatarEl.textContent      = TH.initials(profile.full_name || 'T');
+    avatarEl.style.background = TH.avatarColor(profile.full_name || 'T');
+  }
+
+  /* ── Name & headline ── */
+  const name = profile.full_name || 'Teacher';
+  const qual = tp?.qualification || '';
+  const exp  = tp?.experience    || '';
+  const subj = tp?.subjects      || '';
+  const loc  = profile.location  || '';
+  const bio  = tp?.bio           || '';
+  const grades = tp?.grades      || '';
+  const cv   = tp?.cv_url        || '';
+  const premium = tp?.is_premium || false;
+  const email = profile.email    || '';
+
+  document.getElementById('profileName').textContent     = name;
+  document.getElementById('profileHeadline').textContent = qual ? qual + ' Teacher' : 'Teacher · Liberia';
+  document.getElementById('profileLocation').textContent = loc || 'Liberia';
+
+  /* ── Badges ── */
+  const badges = document.getElementById('profileBadges');
+  if (premium) badges.innerHTML += '<span class="badge badge--premium">⭐ Premium Member</span>';
+  if (qual)    badges.innerHTML += '<span class="badge badge--sage">' + qual + '</span>';
+  if (exp)     badges.innerHTML += '<span class="badge badge--outline">' + exp + ' experience</span>';
+
+  /* ── Actions ── */
+  const actions = document.getElementById('profileActions');
+  if (email) {
+    actions.innerHTML =
+      '<a href="mailto:' + email + '" class="btn btn--primary">📧 Contact Teacher</a>' +
+      '<a href="teachers.html" class="btn btn--outline">← Back to Directory</a>';
+  } else {
+    actions.innerHTML = '<a href="teachers.html" class="btn btn--outline">← Back to Directory</a>';
+  }
+
+  /* ── Stats ── */
+  const statsEl = document.getElementById('profileStats');
+  const statItems = [];
+  if (exp)    statItems.push({ num: exp, lbl: 'Experience' });
+  if (subj)   statItems.push({ num: subj.split(',').filter(Boolean).length, lbl: 'Subjects' });
+  if (grades) statItems.push({ num: grades.split(',').filter(Boolean).length || grades, lbl: 'Grade Levels' });
+  if (statItems.length) {
+    statsEl.innerHTML = statItems.map(s =>
+      '<div class="profile-stat"><div class="num">' + s.num + '</div><div class="lbl">' + s.lbl + '</div></div>'
+    ).join('');
+  } else {
+    statsEl.style.display = 'none';
+  }
+
+  /* ── About ── */
+  if (bio) {
+    document.getElementById('sectionAbout').style.display = 'block';
+    document.getElementById('aboutText').textContent = bio;
+  }
+
+  /* ── Details grid ── */
+  const details = [
+    { label:'Qualification', value: qual  || '—' },
+    { label:'Experience',    value: exp   || '—' },
+    { label:'Location',      value: loc   || '—' },
+    { label:'Grades Taught', value: grades || '—' },
+    { label:'Phone',         value: phone ? '<a href="tel:' + phone + '" style="color:var(--sage)">' + phone + '</a>' : '—' },
+    { label:'Email',         value: email ? '<a href="mailto:' + email + '" style="color:var(--sage)">' + email + '</a>' : '—' },
+    { label:'Member Since',  value: new Date(profile.created_at).toLocaleDateString('en-LR',{month:'long',year:'numeric'}) },
+  ];
+  document.getElementById('detailsGrid').innerHTML = details.map(d =>
+    '<div class="info-item"><div class="label">' + d.label + '</div><div class="value">' + d.value + '</div></div>'
+  ).join('');
+
+  /* ── Subjects ── */
+  if (subj) {
+    document.getElementById('sectionSubjects').style.display = 'block';
+    document.getElementById('subjectsList').innerHTML = subj.split(',')
+      .map(s => s.trim()).filter(Boolean)
+      .map(s => '<span class="tag" style="font-size:14px;padding:6px 14px">' + s + '</span>')
+      .join('');
+  }
+
+  /* ── CV ── */
+  if (cv) {
+    document.getElementById('sectionCV').style.display = 'block';
+    document.getElementById('cvName').textContent = name + "'s CV";
+    document.getElementById('cvLink').href = cv;
+  }
+
+});
+
+function showNotFound() {
+  document.querySelector('.profile-main').innerHTML =
+    '<div class="not-found">' +
+      '<div class="icon">🔍</div>' +
+      '<h2 style="font-family:var(--font-serif);margin-bottom:8px">Profile Not Found</h2>' +
+      '<p style="color:var(--muted);margin-bottom:24px">This teacher profile does not exist or has been removed.</p>' +
+      '<a href="teachers.html" class="btn btn--primary">Browse All Teachers</a>' +
+    '</div>';
+}
+</script>
+</body>
+</html>

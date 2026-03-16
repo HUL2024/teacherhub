@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Learn about Teacher-Hub — Liberia's platform connecting teachers and schools."/>
+  <title>About Us — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .page-content { max-width: 780px; margin: 0 auto; padding: 56px 24px 80px; }
+    .page-content h1 { font-size: clamp(28px,5vw,42px); font-family: var(--font-serif); margin-bottom: 8px; }
+    .page-content .lead { font-size: 17px; color: var(--muted); margin-bottom: 48px; line-height: 1.7; border-bottom: 1px solid var(--border); padding-bottom: 32px; }
+    .page-content h2 { font-family: var(--font-serif); font-size: 22px; margin: 40px 0 14px; color: var(--ink); }
+    .page-content p  { font-size: 15px; color: var(--muted); line-height: 1.85; margin-bottom: 16px; }
+    .page-content ul { padding-left: 20px; margin-bottom: 16px; }
+    .page-content ul li { font-size: 15px; color: var(--muted); line-height: 1.85; margin-bottom: 8px; }
+    .page-content a  { color: var(--sage); text-decoration: underline; }
+    .info-card { background: var(--cream); border-radius: var(--radius-lg); padding: 28px 32px; margin: 32px 0; border-left: 4px solid var(--sage); }
+    .info-card p { margin-bottom: 0; }
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 20px; margin: 32px 0; }
+    .contact-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; text-align: center; }
+    .contact-item .icon { font-size: 32px; margin-bottom: 12px; }
+    .contact-item h3 { font-size: 15px; font-family: var(--font-serif); margin-bottom: 6px; }
+    .contact-item p { font-size: 13px; margin-bottom: 0; }
+    .contact-item a { font-size: 13px; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 24px; margin: 32px 0; }
+    .team-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; }
+    .team-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--sage); color: #fff; font-family: var(--font-serif); font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+    .team-card h3 { font-size: 16px; margin-bottom: 4px; }
+    .team-card p  { font-size: 13px; margin-bottom: 0; }
+    .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin: 32px 0; }
+    @media(max-width:600px){ .stat-row { grid-template-columns: 1fr 1fr; } }
+    .stat-item { background: var(--ink); color: #fff; border-radius: var(--radius-lg); padding: 24px; text-align: center; }
+    .stat-item .num { font-family: var(--font-serif); font-size: 32px; color: var(--sage-light); }
+    .stat-item .lbl { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 4px; }
+    .last-updated { font-size: 12px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 40px; }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<header class="page-hero page-hero--sage">
+  <div class="container">
+    <h1>About Teacher-Hub</h1>
+    <p>Building the future of education in Liberia</p>
+  </div>
+</header>
+
+<div class="page-content">
+  <p class="lead">Teacher-Hub is Liberia's first dedicated platform connecting qualified teachers with schools across all 15 counties. We believe every classroom deserves an excellent teacher — and every teacher deserves the tools to grow their career.</p>
+
+  <h2>Our Mission</h2>
+  <p>To eliminate the gap between qualified teachers and the schools that need them, by creating a trusted, easy-to-use platform built specifically for the Liberian education system.</p>
+  <p>We are not a generic job board. Every feature on Teacher-Hub — from the job listings to the teaching notes marketplace — has been designed with the realities of Liberian educators in mind.</p>
+
+  <h2>What We Offer</h2>
+  <ul>
+    <li><strong>Job Board</strong> — Schools post verified vacancies. Teachers apply in one click with their profile.</li>
+    <li><strong>Teaching Notes Marketplace</strong> — Curriculum-aligned resources for every grade level, from Nursery to Grade 12 and beyond.</li>
+    <li><strong>Teacher Directory</strong> — Schools can browse and connect with qualified teachers across Liberia.</li>
+    <li><strong>Professional Profiles</strong> — Teachers build a digital CV visible to schools on the platform.</li>
+  </ul>
+
+  <div class="stat-row">
+    <div class="stat-item"><div class="num" id="aboutUsers">—</div><div class="lbl">Registered Teachers</div></div>
+    <div class="stat-item"><div class="num" id="aboutJobs">—</div><div class="lbl">Active Job Posts</div></div>
+    <div class="stat-item"><div class="num" id="aboutNotes">—</div><div class="lbl">Teaching Notes</div></div>
+  </div>
+
+  <h2>Our Story</h2>
+  <p>Teacher-Hub was founded with a simple observation: great teachers in Liberia were struggling to find opportunities, while schools were struggling to find great teachers. The connection was missing.</p>
+  <p>We built Teacher-Hub to be that connection — a professional, trusted space where the Liberian education community can find each other, share resources, and grow together.</p>
+
+  <h2>Our Values</h2>
+  <ul>
+    <li><strong>Education First</strong> — Every decision we make starts with what is best for Liberian students and teachers.</li>
+    <li><strong>Trust & Transparency</strong> — All schools and job listings are reviewed before going live.</li>
+    <li><strong>Accessibility</strong> — We keep costs low so that teachers at every income level can benefit from the platform.</li>
+    <li><strong>Community</strong> — We are building more than a product. We are building a professional community for Liberian educators.</li>
+  </ul>
+
+  <div class="info-card">
+    <p>📍 <strong>Based in Liberia</strong> — Teacher-Hub is proudly built for and by people who care deeply about Liberian education. We are committed to this community for the long term.</p>
+  </div>
+
+  <h2>Contact Us</h2>
+  <p>Have questions, feedback, or want to partner with us? We would love to hear from you. Visit our <a href="contact.html">Contact page</a> or email us directly at <a href="mailto:georgeet028@gmail.com">georgeet028@gmail.com</a>.</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const { count: userCount } = await db.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'teacher');
+  const { count: jobCount }  = await db.from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'approved');
+  const { count: noteCount } = await db.from('notes').select('*', { count: 'exact', head: true });
+  if (document.getElementById('aboutUsers')) document.getElementById('aboutUsers').textContent = userCount || '0';
+  if (document.getElementById('aboutJobs'))  document.getElementById('aboutJobs').textContent  = jobCount  || '0';
+  if (document.getElementById('aboutNotes')) document.getElementById('aboutNotes').textContent = noteCount || '0';
+});
+</script>
+
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

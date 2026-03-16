@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Find teaching jobs posted by verified Liberian schools."/>
+  <title>Job Board — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .jobs-layout { display:grid; grid-template-columns:260px 1fr; gap:32px; padding:48px 0; }
+    @media(max-width:800px){ .jobs-layout{ grid-template-columns:1fr; } }
+
+    .sidebar-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow); margin-bottom:20px; }
+    .sidebar-card h3 { font-size:17px; margin-bottom:18px; }
+    .filter-group { margin-bottom:18px; }
+    .filter-group label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:8px; }
+
+    .job-list { display:flex; flex-direction:column; gap:20px; }
+    .job-full-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px; box-shadow:var(--shadow); transition:box-shadow .2s, transform .2s; }
+    .job-full-card:hover { box-shadow:var(--shadow-hover); transform:translateY(-2px); }
+    .job-full-card.premium { border-left:4px solid var(--amber); }
+
+    .job-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+    .job-school-row { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+    .school-logo { width:44px; height:44px; border-radius:8px; background:var(--cream); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; flex-shrink:0; }
+    .school-logo img { width:100%; height:100%; object-fit:cover; }
+    .school-info h4 { font-size:14px; font-weight:600; }
+    .school-info p  { font-size:13px; color:var(--muted); }
+    .job-title      { font-size:20px; }
+    .job-tags       { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .job-desc       { font-size:14px; color:var(--muted); line-height:1.7; margin-bottom:16px; }
+    .job-meta-grid  { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:12px; margin-bottom:16px; }
+    .meta-item      { font-size:13px; }
+    .meta-item span { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-weight:700; margin-bottom:2px; }
+    .salary-badge   { font-family:var(--font-mono); font-size:14px; font-weight:700; color:var(--sage); }
+    .job-actions    { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; padding-top:16px; border-top:1px solid var(--border); }
+    .deadline-text  { font-size:12px; color:var(--muted); }
+
+    .post-cta { background:var(--ink); border-radius:var(--radius-lg); padding:24px; color:#fff; }
+    .post-cta h3 { font-size:17px; color:#fff; margin-bottom:10px; }
+    .post-cta p  { font-size:13px; color:rgba(255,255,255,.65); line-height:1.6; margin-bottom:16px; }
+
+    .results-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+    .empty-state { text-align:center; padding:64px 24px; color:var(--muted); }
+    .empty-state .icon { font-size:48px; margin-bottom:16px; }
+
+    /* Apply Modal */
+    .apply-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:9999; align-items:center; justify-content:center; }
+    .apply-overlay.open { display:flex; }
+    .apply-box { background:#fff; border-radius:16px; padding:32px; max-width:520px; width:90%; max-height:90vh; overflow-y:auto; position:relative; }
+    .apply-close { position:absolute; top:14px; right:16px; background:none; border:none; font-size:22px; cursor:pointer; color:#666; line-height:1; }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<header class="page-hero page-hero--ink">
+  <div class="container">
+    <h1>Teaching Jobs</h1>
+    <p>Verified vacancies from schools across Liberia</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="jobs-layout">
+
+    <!-- Sidebar -->
+    <aside>
+      <div class="sidebar-card">
+        <h3>Filter Jobs</h3>
+        <div class="filter-group">
+          <label>Keyword</label>
+          <input type="text" id="keywordInput" placeholder="Job title, school…" oninput="renderJobs()" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:var(--font-sans);box-sizing:border-box"/>
+        </div>
+        <div class="filter-group">
+          <label>Subject</label>
+          <input type="text" id="subjFilter" placeholder="e.g. Mathematics…" oninput="renderJobs()" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:var(--font-sans);box-sizing:border-box"/>
+        </div>
+        <div class="filter-group">
+          <label>Location</label>
+          <input type="text" id="locFilter" placeholder="e.g. Monrovia…" oninput="renderJobs()" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:var(--font-sans);box-sizing:border-box"/>
+        </div>
+        <div class="filter-group">
+          <label>Job Type</label>
+          <select id="typeFilter" onchange="renderJobs()" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;background:var(--paper);font-family:var(--font-sans)">
+            <option value="">All Types</option>
+            <option>Full-Time</option>
+            <option>Part-Time</option>
+            <option>Contract</option>
+            <option>Substitute</option>
+          </select>
+        </div>
+        <button class="btn btn--ghost btn--sm btn--block" onclick="clearFilters()" style="border:1px solid var(--border)">Clear Filters</button>
+      </div>
+
+      <div class="post-cta">
+        <h3>📢 Hiring Teachers?</h3>
+        <p>Register your school and post vacancies for free to reach qualified teachers across Liberia.</p>
+        <button class="btn btn--white btn--sm btn--block" onclick="TH.openModal('schoolSignupModal')">Register School Free</button>
+      </div>
+    </aside>
+
+    <!-- Job List -->
+    <main>
+      <div class="results-header">
+        <div>
+          <h2 class="section-title" style="font-size:22px">All Jobs</h2>
+          <p id="jobCount" style="font-size:14px;color:var(--muted)"></p>
+        </div>
+        <select id="sortJobs" onchange="renderJobs()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font-sans);font-size:14px;background:var(--paper)">
+          <option value="newest">Newest First</option>
+          <option value="deadline">Closing Soon</option>
+          <option value="premium">Featured First</option>
+        </select>
+      </div>
+      <div class="job-list" id="jobList">
+        <div class="empty-state"><div class="icon">⏳</div><p>Loading jobs…</p></div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<!-- Apply Modal -->
+<div id="applyOverlay" class="apply-overlay" onclick="if(event.target===this)closeApply()">
+  <div class="apply-box">
+    <button class="apply-close" onclick="closeApply()">✕</button>
+    <h2 style="font-size:20px;margin-bottom:4px" id="applyTitle">Apply for Job</h2>
+    <p style="color:#666;font-size:13px;margin-bottom:20px" id="applySchool"></p>
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666;margin-bottom:8px">
+        Cover Letter <span style="font-weight:400;color:#999">(optional)</span>
+      </label>
+      <textarea id="applyCover" rows="5" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:8px;font-family:inherit;font-size:14px;resize:vertical;box-sizing:border-box" placeholder="Introduce yourself and explain why you are a good fit…"></textarea>
+    </div>
+    <div id="applyErr" style="display:none;background:#fff0f0;border:1px solid #ffcccc;border-radius:8px;padding:12px;font-size:13px;color:#cc0000;margin-bottom:16px"></div>
+    <div style="display:flex;gap:12px">
+      <button id="applyBtn" onclick="submitApply()" style="flex:1;padding:12px;background:#1a4fa0;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Submit Application</button>
+      <button onclick="closeApply()" style="padding:12px 20px;background:none;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let allJobs    = [];
+  let activeJobId = null;
+
+  /* ── Load jobs from Supabase ── */
+  async function loadJobs() {
+    const { data, error } = await db
+      .from('jobs')
+      .select('*, school_profiles(id, school_name, city, photo_url)')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      document.getElementById('jobList').innerHTML =
+        '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load jobs. Please try again.</p></div>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      document.getElementById('jobList').innerHTML =
+        '<div class="empty-state"><div class="icon">📋</div><h3>No jobs posted yet</h3><p>Check back soon — schools are signing up!</p></div>';
+      return;
+    }
+
+    allJobs = data.map(j => ({
+      id:          j.id,
+      title:       j.title        || '',
+      school:      j.school_profiles?.school_name || 'School',
+      schoolPhoto: j.school_profiles?.photo_url   || '',
+      schoolId:    j.school_profiles?.id           || '',
+      location:    j.location || j.school_profiles?.city || '',
+      subject:     j.subject  || '',
+      type:        j.job_type || '',
+      qual:        j.qualification || '',
+      desc:        j.description   || '',
+      salary:      j.salary        || 'Negotiable',
+      deadline:    j.deadline      || '',
+      premium:     j.is_premium    || false,
+    }));
+
+    renderJobs();
+
+    // Auto-open apply modal if coming from school profile (?apply=jobId)
+    const applyId = new URLSearchParams(window.location.search).get('apply');
+    if (applyId) {
+      const j = allJobs.find(x => x.id === applyId);
+      if (j) openApply(j.id, j.title, j.school);
+    }
+  }
+
+  /* ── Render filtered + sorted list ── */
+  function renderJobs() {
+    const kw   = document.getElementById('keywordInput').value.toLowerCase();
+    const subj = document.getElementById('subjFilter').value.toLowerCase();
+    const loc  = document.getElementById('locFilter').value.toLowerCase();
+    const type = document.getElementById('typeFilter').value;
+    const sort = document.getElementById('sortJobs').value;
+
+    let list = allJobs.filter(j => {
+      if (kw   && !j.title.toLowerCase().includes(kw) && !j.school.toLowerCase().includes(kw)) return false;
+      if (subj && !j.subject.toLowerCase().includes(subj)) return false;
+      if (loc  && !j.location.toLowerCase().includes(loc)) return false;
+      if (type && j.type !== type) return false;
+      return true;
+    });
+
+    if (sort === 'premium')  list.sort((a,b) => (b.premium?1:0) - (a.premium?1:0));
+    if (sort === 'deadline') list.sort((a,b) => (a.deadline||'9').localeCompare(b.deadline||'9'));
+
+    document.getElementById('jobCount').textContent =
+      list.length + ' job' + (list.length !== 1 ? 's' : '') + ' found';
+
+    if (list.length === 0) {
+      document.getElementById('jobList').innerHTML =
+        '<div class="empty-state"><div class="icon">🔍</div><h3>No jobs match your filters</h3><p>Try adjusting your search</p></div>';
+      return;
+    }
+
+    document.getElementById('jobList').innerHTML = list.map(j => {
+      const deadlineText = j.deadline
+        ? '⏰ Closes ' + new Date(j.deadline).toLocaleDateString('en-LR',{day:'numeric',month:'long',year:'numeric'})
+        : '';
+      const safeTitle  = j.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const safeSchool = j.school.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return (
+        '<article class="job-full-card ' + (j.premium ? 'premium' : '') + '">' +
+          '<div class="job-top">' +
+            '<h3 class="job-title">' + j.title + '</h3>' +
+            (j.premium    ? '<span class="badge badge--premium">⭐ Premium</span>' : '') +
+            (j.easyApply  ? '<span class="badge" style="background:#2a9d4e;color:#fff">⚡ Easy Apply</span>' : '') +
+          '</div>' +
+          '<div class="job-school-row">' +
+            '<div class="school-logo">' + (j.schoolPhoto ? '<img src="' + j.schoolPhoto + '" alt=""/>' : '🏫') + '</div>' +
+            '<div class="school-info"><h4>' + j.school + '</h4><p>📍 ' + j.location + '</p></div>' +
+            (j.schoolId ? '<a href="school-profile.html?id=' + j.schoolId + '" class="btn btn--ghost btn--sm" style="margin-left:auto;font-size:12px;white-space:nowrap">View School</a>' : '') +
+          '</div>' +
+          '<div class="job-tags">' +
+            (j.subject ? '<span class="tag">' + j.subject + '</span>' : '') +
+            (j.type    ? '<span class="tag">' + j.type    + '</span>' : '') +
+            (j.qual    ? '<span class="tag">' + j.qual    + '</span>' : '') +
+          '</div>' +
+          '<p class="job-desc">' + j.desc + '</p>' +
+          '<div class="job-meta-grid">' +
+            '<div class="meta-item"><span>Salary</span><div class="salary-badge">' + j.salary + '</div></div>' +
+            '<div class="meta-item"><span>Location</span>' + j.location + '</div>' +
+            '<div class="meta-item"><span>Qualification</span>' + (j.qual||'—') + '</div>' +
+          '</div>' +
+          '<div class="job-actions">' +
+            '<p class="deadline-text">' + deadlineText + '</p>' +
+            '<a href="job-detail.html?id=' + j.id + '" class="btn btn--ghost btn--sm">👁 View</a>' +
+            (j.easyApply
+              ? '<button class="btn btn--sm" style="background:#2a9d4e;color:#fff;border:none" onclick="easyApply(\'' + j.id + '\',\'' + safeTitle + '\',\'' + safeSchool + '\')">⚡ Easy Apply</button>'
+              : '<button class="btn btn--primary btn--sm" onclick="openApply(\'' + j.id + '\',\'' + safeTitle + '\',\'' + safeSchool + '\')">Apply Now</button>'
+            ) +
+            '<button class="btn btn--sm save-btn" id="save-' + j.id + '" data-id="' + j.id + '" data-title="' + safeTitle + '" data-school="' + safeSchool + '" data-loc="' + (j.location||'') + '" onclick="toggleSave(this)" style="border:1.5px solid var(--border)">🔖 Save</button>' +
+          '</div>' +
+        '</article>'
+      );
+    }).join('');
+
+    // Update save button states after render
+    const saved = getSavedJobs();
+    saved.forEach(s => {
+      const btn = document.getElementById('save-' + s.id);
+      if (btn) { btn.textContent = '✅ Saved'; btn.style.background = 'var(--sage)'; btn.style.color = '#fff'; btn.style.border = '1.5px solid var(--sage)'; }
+    });
+  }
+
+  function clearFilters() {
+    document.getElementById('keywordInput').value = '';
+    document.getElementById('subjFilter').value   = '';
+    document.getElementById('locFilter').value    = '';
+    document.getElementById('typeFilter').value   = '';
+    renderJobs();
+  }
+
+  /* ── Apply Modal ── */
+  function getSavedJobs() {
+    try { return JSON.parse(localStorage.getItem('th_saved_jobs') || '[]'); } catch { return []; }
+  }
+  function toggleSave(btn) {
+    const jobId   = btn.getAttribute('data-id');
+    const title   = btn.getAttribute('data-title');
+    const school  = btn.getAttribute('data-school');
+    const location = btn.getAttribute('data-loc');
+    let saved = getSavedJobs();
+    const idx = saved.findIndex(s => s.id === jobId);
+    if (idx >= 0) {
+      saved.splice(idx, 1);
+      btn.textContent = '🔖 Save';
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--ink)';
+      btn.style.border = '1.5px solid var(--border)';
+      TH.toast('Job removed from saved');
+    } else {
+      saved.push({ id: jobId, title, school, location, savedAt: Date.now() });
+      btn.textContent = '✅ Saved';
+      btn.style.background = 'var(--sage)';
+      btn.style.color = '#fff';
+      btn.style.border = '1.5px solid var(--sage)';
+      TH.toast('Job saved! ✅');
+    }
+    localStorage.setItem('th_saved_jobs', JSON.stringify(saved));
+  }
+
+  function openApply(jobId, title, school) {
+    const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+    if (!u || u.role !== 'teacher') {
+      TH.toast('Please log in as a teacher to apply.');
+      TH.openModal('loginModal');
+      return;
+    }
+    activeJobId = jobId;
+    document.getElementById('applyTitle').textContent  = title  || 'Job';
+    document.getElementById('applySchool').textContent = school || '';
+    document.getElementById('applyCover').value        = '';
+    document.getElementById('applyErr').style.display  = 'none';
+    document.getElementById('applyBtn').textContent    = 'Submit Application';
+    document.getElementById('applyBtn').disabled       = false;
+    document.getElementById('applyOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeApply() {
+    document.getElementById('applyOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  async function easyApply(jobId, title, school) {
+    const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+    if (!u) { TH.toast('Please log in to apply'); TH.openModal('loginModal'); return; }
+
+    // Check duplicate
+    const { data: existing } = await db.from('applications')
+      .select('id').eq('job_id', jobId).eq('teacher_id', u.id).maybeSingle();
+    if (existing) { TH.toast('You already applied for this job'); return; }
+
+    const { error } = await db.from('applications').insert({
+      job_id:       jobId,
+      teacher_id:   u.id,
+      cover_letter: '',
+      status:       'pending'
+    });
+    if (error) { TH.toast('⚠️ ' + error.message); return; }
+    TH.toast('⚡ Application submitted instantly!');
+  }
+
+  async function submitApply() {
+    const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+    if (!u) return;
+
+    const cover  = document.getElementById('applyCover').value.trim();
+    const btn    = document.getElementById('applyBtn');
+    const errDiv = document.getElementById('applyErr');
+
+    errDiv.style.display = 'none';
+    btn.textContent = 'Submitting…';
+    btn.disabled    = true;
+
+    const { data: existing } = await db
+      .from('applications')
+      .select('id')
+      .eq('job_id', activeJobId)
+      .eq('teacher_id', u.id)
+      .maybeSingle();
+
+    if (existing) {
+      errDiv.textContent   = 'You have already applied for this job.';
+      errDiv.style.display = 'block';
+      btn.textContent = 'Submit Application';
+      btn.disabled    = false;
+      return;
+    }
+
+    const { error } = await db.from('applications').insert({
+      job_id:       activeJobId,
+      teacher_id:   u.id,
+      cover_letter: cover,
+      status:       'pending',
+    });
+
+    if (error) {
+      errDiv.textContent   = 'Failed to submit. Please try again.';
+      errDiv.style.display = 'block';
+      btn.textContent = 'Submit Application';
+      btn.disabled    = false;
+      return;
+    }
+
+    closeApply();
+    TH.toast('Application submitted successfully! ✅');
+  }
+
+  loadJobs();
+</script>
+</body>
+</html>

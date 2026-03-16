@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="School profile on Teacher-Hub"/>
+  <title>School Profile — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body { background:var(--paper); }
+
+    .profile-cover {
+      height: 180px;
+      background: linear-gradient(135deg, #0d2d6e 0%, #1a4fa0 60%, #d4820a 100%);
+      position: relative;
+    }
+    .profile-cover-pattern {
+      position:absolute; inset:0;
+      background-image: radial-gradient(circle at 15% 60%, rgba(255,255,255,.06) 0%, transparent 55%),
+                        radial-gradient(circle at 85% 25%, rgba(255,255,255,.08) 0%, transparent 50%);
+    }
+
+    .profile-main { max-width:860px; margin:0 auto; padding:0 24px 60px; }
+
+    .profile-top-card {
+      background:var(--card-bg); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:0 32px 28px;
+      margin-bottom:20px;
+    }
+    .profile-avatar-wrap { position:relative; display:inline-block; margin-top:-50px; margin-bottom:12px; }
+    .profile-avatar {
+      width:100px; height:100px; border-radius:16px;
+      border:4px solid var(--card-bg);
+      background:var(--sage); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:42px; overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,.15);
+    }
+    .profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
+
+    .profile-name     { font-family:var(--font-serif); font-size:28px; margin-bottom:4px; }
+    .profile-headline { font-size:15px; color:var(--muted); margin-bottom:8px; }
+    .profile-location { font-size:14px; color:var(--muted); display:flex; align-items:center; gap:6px; margin-bottom:16px; }
+    .profile-badges   { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+    .profile-actions  { display:flex; gap:10px; flex-wrap:wrap; }
+
+    .profile-stats { display:flex; gap:0; border-top:1px solid var(--border); margin-top:20px; padding-top:16px; flex-wrap:wrap; }
+    .profile-stat  { flex:1; text-align:center; min-width:100px; }
+    .profile-stat + .profile-stat { border-left:1px solid var(--border); }
+    .profile-stat .num { font-family:var(--font-serif); font-size:24px; color:var(--sage); }
+    .profile-stat .lbl { font-size:12px; color:var(--muted); margin-top:2px; }
+
+    .profile-section {
+      background:var(--card-bg); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:28px 32px; margin-bottom:16px;
+    }
+    .profile-section h2 {
+      font-family:var(--font-serif); font-size:19px;
+      margin-bottom:18px; padding-bottom:12px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:10px;
+    }
+    .about-text { font-size:15px; color:var(--muted); line-height:1.85; }
+
+    .info-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:20px; }
+    .info-item .label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:4px; }
+    .info-item .value { font-size:15px; color:var(--ink); font-weight:500; }
+
+    /* Job cards */
+    .school-job-card {
+      background:var(--paper); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:20px 24px;
+      margin-bottom:14px; display:flex;
+      justify-content:space-between; align-items:flex-start;
+      gap:16px; flex-wrap:wrap;
+    }
+    .school-job-card:last-child { margin-bottom:0; }
+    .school-job-title { font-family:var(--font-serif); font-size:16px; margin-bottom:4px; }
+    .school-job-meta  { font-size:13px; color:var(--muted); }
+    .school-job-tags  { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+
+    .skeleton { background:var(--border); border-radius:4px; animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .not-found { text-align:center; padding:80px 24px; }
+    .not-found .icon { font-size:56px; margin-bottom:16px; }
+
+    @media(max-width:600px){
+      .profile-top-card { padding:0 16px 24px; }
+      .profile-section  { padding:20px 16px; }
+      .profile-name     { font-size:22px; }
+    }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<div class="profile-cover"><div class="profile-cover-pattern"></div></div>
+
+<div class="profile-main">
+
+  <!-- Top Card -->
+  <div class="profile-top-card">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar" id="schoolAvatar">🏫</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
+      <div>
+        <h1 class="profile-name" id="schoolName">Loading…</h1>
+        <p class="profile-headline" id="schoolHeadline">School · Liberia</p>
+        <div class="profile-location"><span>📍</span><span id="schoolLocation">—</span></div>
+        <div class="profile-badges" id="schoolBadges"></div>
+      </div>
+      <div class="profile-actions" id="schoolActions"></div>
+    </div>
+    <div class="profile-stats" id="schoolStats" style="display:none"></div>
+  </div>
+
+  <!-- About -->
+  <div class="profile-section" id="sectionAbout" style="display:none">
+    <h2>📝 About</h2>
+    <p class="about-text" id="aboutText"></p>
+  </div>
+
+  <!-- Details -->
+  <div class="profile-section">
+    <h2>🏫 School Information</h2>
+    <div class="info-grid" id="detailsGrid">
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+      <div class="skeleton" style="height:60px;border-radius:8px"></div>
+    </div>
+  </div>
+
+  <!-- Active Vacancies -->
+  <div class="profile-section">
+    <h2>💼 Active Job Vacancies</h2>
+    <div id="jobsList"><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+  </div>
+
+</div>
+
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+
+  const params   = new URLSearchParams(window.location.search);
+  const schoolId = params.get('id'); // this is school_profiles.id
+
+  if (!schoolId) { showNotFound(); return; }
+
+  /* ── Fetch school profile ── */
+  const { data: sp, error } = await db
+    .from('school_profiles')
+    .select('*')
+    .eq('id', schoolId)
+    .maybeSingle();
+
+  if (error || !sp) { showNotFound(); return; }
+
+  document.title = (sp.school_name || 'School') + ' — Teacher-Hub';
+
+  /* ── Avatar ── */
+  const avatarEl = document.getElementById('schoolAvatar');
+  if (sp.photo_url) {
+    avatarEl.innerHTML        = '<img src="' + sp.photo_url + '" alt="' + (sp.school_name||'') + '"/>';
+    avatarEl.style.background = 'transparent';
+  }
+
+  /* ── Name & headline ── */
+  document.getElementById('schoolName').textContent     = sp.school_name || 'School';
+  document.getElementById('schoolHeadline').textContent = (sp.school_type || 'School') + ' · Liberia';
+  document.getElementById('schoolLocation').textContent = sp.city || (sp.address ? sp.address : 'Liberia');
+
+  /* ── Badges ── */
+  const badges = document.getElementById('schoolBadges');
+  if (sp.school_type) badges.innerHTML += '<span class="badge badge--sage">'    + sp.school_type + '</span>';
+  if (sp.est_year)    badges.innerHTML += '<span class="badge badge--outline">Est. ' + sp.est_year + '</span>';
+  if (sp.is_premium)  badges.innerHTML += '<span class="badge badge--premium">⭐ Premium School</span>';
+
+  /* ── Actions ── */
+  const actions = document.getElementById('schoolActions');
+  let btns = '';
+  if (sp.email)   btns += '<a href="mailto:' + sp.email   + '" class="btn btn--primary">📧 Contact School</a>';
+  if (sp.phone)   btns += '<a href="tel:'    + sp.phone   + '" class="btn btn--outline">📞 ' + sp.phone + '</a>';
+  if (sp.website) btns += '<a href="'        + sp.website + '" target="_blank" class="btn btn--outline">🌐 Website</a>';
+  btns += '<a href="jobs.html" class="btn btn--ghost">← Back to Jobs</a>';
+  actions.innerHTML = btns;
+
+  /* ── Stats ── */
+  const { count: jobCount } = await db
+    .from('jobs')
+    .select('*', { count:'exact', head:true })
+    .eq('school_id', schoolId)
+    .eq('status', 'approved');
+
+  const statsEl = document.getElementById('schoolStats');
+  const statItems = [];
+  if (sp.est_year)  statItems.push({ num: new Date().getFullYear() - sp.est_year + '+', lbl: 'Years Active' });
+  if (jobCount > 0) statItems.push({ num: jobCount, lbl: 'Open Vacancies' });
+  if (statItems.length) {
+    statsEl.style.display = 'flex';
+    statsEl.innerHTML = statItems.map(s =>
+      '<div class="profile-stat"><div class="num">' + s.num + '</div><div class="lbl">' + s.lbl + '</div></div>'
+    ).join('');
+  }
+
+  /* ── About ── */
+  if (sp.bio) {
+    document.getElementById('sectionAbout').style.display = 'block';
+    document.getElementById('aboutText').textContent = sp.bio;
+  }
+
+  /* ── Details grid ── */
+  const details = [
+    { label: 'School Type',    value: sp.school_type || '—' },
+    { label: 'Year Est.',      value: sp.est_year    || '—' },
+    { label: 'Location',       value: sp.city        || '—' },
+    { label: 'Address',        value: sp.address     || '—' },
+    { label: 'Administrator',  value: sp.admin_name  ? sp.admin_name + (sp.admin_role ? ' · ' + sp.admin_role : '') : '—' },
+    { label: 'Email',          value: sp.email   ? '<a href="mailto:' + sp.email   + '" style="color:var(--sage)">' + sp.email   + '</a>' : '—' },
+    { label: 'Phone',          value: sp.phone   ? '<a href="tel:'    + sp.phone   + '" style="color:var(--sage)">' + sp.phone   + '</a>' : '—' },
+    { label: 'Website',        value: sp.website ? '<a href="'        + sp.website + '" target="_blank" style="color:var(--sage)">' + sp.website + '</a>' : '—' },
+  ];
+  document.getElementById('detailsGrid').innerHTML = details.map(d =>
+    '<div class="info-item"><div class="label">' + d.label + '</div><div class="value">' + d.value + '</div></div>'
+  ).join('');
+
+  /* ── Active vacancies ── */
+  const { data: jobs } = await db
+    .from('jobs')
+    .select('*')
+    .eq('school_id', schoolId)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false });
+
+  const jobsEl = document.getElementById('jobsList');
+  if (!jobs || jobs.length === 0) {
+    jobsEl.innerHTML = '<p style="color:var(--muted);font-size:14px">No active vacancies at this time.</p>';
+  } else {
+    jobsEl.innerHTML = jobs.map(j => {
+      const deadline = j.deadline
+        ? ' · Deadline: ' + new Date(j.deadline).toLocaleDateString('en-LR',{day:'numeric',month:'short',year:'numeric'})
+        : '';
+      return '<div class="school-job-card">' +
+        '<div style="flex:1">' +
+          '<div class="school-job-title">' + j.title + '</div>' +
+          '<div class="school-job-meta">📍 ' + (j.location||'') + deadline + '</div>' +
+          '<div class="school-job-tags">' +
+            (j.subject  ? '<span class="tag">' + j.subject  + '</span>' : '') +
+            (j.job_type ? '<span class="tag">' + j.job_type + '</span>' : '') +
+            (j.salary   ? '<span class="tag">💰 ' + j.salary + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<a href="jobs.html?apply=' + j.id + '" class="btn btn--primary btn--sm" style="white-space:nowrap">Apply Now</a>' +
+      '</div>';
+    }).join('');
+  }
+
+});
+
+function showNotFound() {
+  document.querySelector('.profile-main').innerHTML =
+    '<div class="not-found">' +
+      '<div class="icon">🏫</div>' +
+      '<h2 style="font-family:var(--font-serif);margin-bottom:8px">School Not Found</h2>' +
+      '<p style="color:var(--muted);margin-bottom:24px">This school profile does not exist or has been removed.</p>' +
+      '<a href="jobs.html" class="btn btn--primary">Browse Jobs</a>' +
+    '</div>';
+}
+</script>
+</body>
+</html>

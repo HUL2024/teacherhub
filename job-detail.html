@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Job Detail — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body { background: var(--paper); }
+    .detail-wrap { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+    @media(max-width:600px){ .detail-wrap { padding: 24px 16px 60px; } }
+
+    .back-link { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); margin-bottom:24px; cursor:pointer; }
+    .back-link:hover { color:var(--ink); }
+
+    .job-header { background:var(--ink); border-radius:var(--radius-lg); padding:32px; color:#fff; margin-bottom:24px; }
+    .job-header-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+    .job-title-main { font-family:var(--font-serif); font-size:28px; color:#fff; margin-bottom:6px; }
+    @media(max-width:500px){ .job-title-main { font-size:22px; } }
+
+    .school-row { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+    .school-logo-lg { width:52px; height:52px; border-radius:10px; background:var(--sage); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; overflow:hidden; border:2px solid rgba(255,255,255,.2); }
+    .school-logo-lg img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+    .school-name-lg { font-size:16px; font-weight:600; color:#fff; }
+    .school-loc-lg  { font-size:13px; color:rgba(255,255,255,.6); margin-top:2px; }
+
+    .job-tags-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .job-tag { padding:4px 12px; background:rgba(255,255,255,.1); border-radius:20px; font-size:12px; color:rgba(255,255,255,.8); }
+
+    .detail-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px; margin-bottom:20px; }
+    .detail-card h3 { font-family:var(--font-serif); font-size:18px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+
+    .meta-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+    @media(max-width:500px){ .meta-grid { grid-template-columns:1fr; } }
+    .meta-item label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); display:block; margin-bottom:4px; }
+    .meta-item span  { font-size:14px; font-weight:600; color:var(--ink); }
+
+    .job-desc-text { font-size:14px; line-height:1.8; color:var(--ink); white-space:pre-wrap; }
+
+    .apply-bar { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; z-index:50; box-shadow:0 -4px 20px rgba(0,0,0,.08); }
+    .apply-bar-info { font-size:13px; color:var(--muted); }
+    .apply-bar-info strong { display:block; font-size:15px; color:var(--ink); }
+    .apply-bar-btns { display:flex; gap:10px; }
+
+    /* Apply modal */
+    .apply-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; align-items:center; justify-content:center; padding:24px; }
+    .apply-overlay.open { display:flex; }
+    .apply-box { background:#fff; border-radius:var(--radius-lg); padding:36px; max-width:520px; width:100%; max-height:90vh; overflow-y:auto; position:relative; }
+    @media(max-width:600px){ .apply-overlay { align-items:flex-end; padding:0; } .apply-box { border-radius:20px 20px 0 0; padding:24px 20px 36px; } }
+    .apply-box h2 { font-family:var(--font-serif); font-size:22px; margin-bottom:6px; }
+    .apply-job-name { font-size:13px; color:var(--muted); margin-bottom:24px; }
+
+    .not-found { text-align:center; padding:80px 24px; }
+    .not-found h2 { font-family:var(--font-serif); font-size:26px; margin-bottom:10px; }
+    .not-found p { color:var(--muted); margin-bottom:24px; }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<div class="detail-wrap">
+  <a class="back-link" onclick="history.back()">← Back to Jobs</a>
+  <div id="jobContent"><p style="color:var(--muted)">Loading job…</p></div>
+</div>
+
+<!-- Fixed Apply Bar -->
+<div class="apply-bar" id="applyBar" style="display:none">
+  <div class="apply-bar-info">
+    <strong id="barTitle">—</strong>
+    <span id="barSchool">—</span>
+  </div>
+  <div class="apply-bar-btns">
+    <button class="btn btn--outline btn--sm" id="saveBarBtn" onclick="toggleSaveBar()">🔖 Save</button>
+    <button class="btn btn--primary" id="applyBarBtn" onclick="handleApplyBar()">Apply Now</button>
+  </div>
+</div>
+
+<!-- Apply Modal -->
+<div class="apply-overlay" id="applyOverlay" onclick="if(event.target===this)closeApply()">
+  <div class="apply-box">
+    <button onclick="closeApply()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">×</button>
+    <h2>Apply for Position</h2>
+    <p class="apply-job-name" id="applyJobName">—</p>
+    <div class="form-group">
+      <label>Cover Letter * <span id="coverNote" style="font-weight:400;color:var(--muted)"></span></label>
+      <textarea id="coverLetter" style="min-height:140px" placeholder="Tell the school why you're a great fit for this role…"></textarea>
+    </div>
+    <div id="applyError" class="alert alert--error hidden" style="margin-bottom:12px">Please log in to apply.</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn--primary" style="flex:1" id="submitApplyBtn" onclick="submitApply()">Submit Application</button>
+      <button class="btn btn--outline" onclick="closeApply()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalHost"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+  const params = new URLSearchParams(location.search);
+  const jobId  = params.get('id');
+  let currentJob = null;
+
+  function getSavedJobs() {
+    try { return JSON.parse(localStorage.getItem('th_saved_jobs') || '[]'); } catch { return []; }
+  }
+
+  function toggleSaveBar() {
+    if (!currentJob) return;
+    const btn   = document.getElementById('saveBarBtn');
+    let saved   = getSavedJobs();
+    const idx   = saved.findIndex(s => s.id === currentJob.id);
+    if (idx >= 0) {
+      saved.splice(idx, 1);
+      btn.textContent = '🔖 Save';
+      btn.classList.remove('btn--primary');
+      TH.toast('Job removed from saved');
+    } else {
+      saved.push({ id: currentJob.id, title: currentJob.title, school: currentJob.school, location: currentJob.location, savedAt: Date.now() });
+      btn.textContent = '✅ Saved';
+      btn.classList.add('btn--primary');
+      TH.toast('Job saved! ✅');
+    }
+    localStorage.setItem('th_saved_jobs', JSON.stringify(saved));
+  }
+
+  async function handleApplyBar() {
+    if (!u) { TH.toast('Please log in to apply'); TH.openModal('loginModal'); return; }
+    if (currentJob.easyApply) {
+      const { data: existing } = await db.from('applications')
+        .select('id').eq('job_id', currentJob.id).eq('teacher_id', u.id).maybeSingle();
+      if (existing) { TH.toast('You already applied for this job'); return; }
+      const btn = document.getElementById('applyBarBtn');
+      btn.textContent = 'Submitting…'; btn.disabled = true;
+      const { error } = await db.from('applications').insert({
+        job_id: currentJob.id, teacher_id: u.id, cover_letter: '', status: 'pending'
+      });
+      btn.textContent = 'Apply Now'; btn.disabled = false;
+      if (error) { TH.toast('⚠️ ' + error.message); return; }
+      TH.toast('⚡ Application submitted instantly!');
+    } else {
+      openApplyModal();
+    }
+  }
+
+  function openApplyModal() {
+    if (!u) { TH.toast('Please log in to apply'); TH.openModal('loginModal'); return; }
+    document.getElementById('applyJobName').textContent = currentJob.title + ' — ' + currentJob.school;
+    document.getElementById('coverLetter').value = '';
+    document.getElementById('applyError').classList.add('hidden');
+    document.getElementById('submitApplyBtn').textContent = 'Submit Application';
+    document.getElementById('submitApplyBtn').disabled = false;
+    document.getElementById('applyOverlay').classList.add('open');
+  }
+
+  function closeApply() {
+    document.getElementById('applyOverlay').classList.remove('open');
+  }
+
+  async function submitApply() {
+    if (!u) { document.getElementById('applyError').classList.remove('hidden'); return; }
+    const btn = document.getElementById('submitApplyBtn');
+    btn.textContent = 'Submitting…'; btn.disabled = true;
+
+    // Check duplicate
+    const { data: existing } = await db.from('applications')
+      .select('id').eq('job_id', currentJob.id).eq('teacher_id', u.id).maybeSingle();
+    if (existing) {
+      TH.toast('You already applied for this job');
+      btn.textContent = 'Submit Application'; btn.disabled = false;
+      closeApply(); return;
+    }
+
+    const { error } = await db.from('applications').insert({
+      job_id:       currentJob.id,
+      teacher_id:   u.id,
+      cover_letter: document.getElementById('coverLetter').value.trim(),
+      status:       'pending'
+    });
+
+    if (error) { TH.toast('⚠️ ' + error.message); btn.textContent = 'Submit Application'; btn.disabled = false; return; }
+    TH.toast('Application submitted! ✅');
+    closeApply();
+  }
+
+  async function loadJob() {
+    if (!jobId) {
+      document.getElementById('jobContent').innerHTML = '<div class="not-found"><h2>Job Not Found</h2><p>No job ID provided.</p><a href="jobs.html" class="btn btn--primary">Browse Jobs</a></div>';
+      return;
+    }
+
+    const { data: job, error } = await db
+      .from('jobs')
+      .select('*, school_profiles(id, school_name, photo_url, city, email, phone, website)')
+      .eq('id', jobId)
+      .eq('status', 'approved')
+      .maybeSingle();
+
+    if (error || !job) {
+      document.getElementById('jobContent').innerHTML = '<div class="not-found"><h2>Job Not Found</h2><p>This job may have been removed or is no longer available.</p><a href="jobs.html" class="btn btn--primary">Browse Jobs</a></div>';
+      return;
+    }
+
+    const sp = job.school_profiles || {};
+    currentJob = {
+      id:       job.id,
+      title:    job.title || '',
+      school:   sp.school_name || 'School',
+      schoolId: sp.id || '',
+      schoolPhoto: sp.photo_url || '',
+      location: job.location || sp.city || '',
+      subject:  job.subject || '',
+      type:     job.job_type || '',
+      qual:     job.qualification || '',
+      desc:     job.description || '',
+      salary:   job.salary || 'Negotiable',
+      deadline: job.deadline || '',
+      premium:   job.is_premium  || false,
+      easyApply: job.easy_apply  || false,
+    };
+
+    const deadline = currentJob.deadline
+      ? new Date(currentJob.deadline).toLocaleDateString('en-LR', {day:'numeric', month:'long', year:'numeric'})
+      : 'Open until filled';
+
+    document.title = currentJob.title + ' — Teacher-Hub';
+
+    document.getElementById('jobContent').innerHTML = `
+      <div class="job-header">
+        <div class="job-header-top">
+          <div>
+            <h1 class="job-title-main">${currentJob.title}</h1>
+            ${currentJob.premium   ? '<span class="badge badge--premium">⭐ Premium Listing</span>' : ''}
+            ${currentJob.easyApply ? '<span class="badge" style="background:#2a9d4e;color:#fff;margin-left:6px">⚡ Easy Apply</span>' : ''}
+          </div>
+          <span style="font-size:12px;color:rgba(255,255,255,.5);font-family:var(--font-mono)">⏰ ${deadline}</span>
+        </div>
+        <div class="school-row">
+          <div class="school-logo-lg">${currentJob.schoolPhoto ? '<img src="' + currentJob.schoolPhoto + '" alt=""/>' : '🏫'}</div>
+          <div>
+            <div class="school-name-lg">${currentJob.school}</div>
+            <div class="school-loc-lg">📍 ${currentJob.location}</div>
+          </div>
+          ${currentJob.schoolId ? '<a href="school-profile.html?id=' + currentJob.schoolId + '" class="btn btn--white btn--sm" style="margin-left:auto">View School</a>' : ''}
+        </div>
+        <div class="job-tags-row">
+          ${currentJob.subject ? '<span class="job-tag">📚 ' + currentJob.subject + '</span>' : ''}
+          ${currentJob.type    ? '<span class="job-tag">💼 ' + currentJob.type    + '</span>' : ''}
+          ${currentJob.qual    ? '<span class="job-tag">🎓 ' + currentJob.qual    + '</span>' : ''}
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <h3>📋 Job Details</h3>
+        <div class="meta-grid">
+          <div class="meta-item"><label>Salary</label><span>${currentJob.salary}</span></div>
+          <div class="meta-item"><label>Location</label><span>${currentJob.location}</span></div>
+          <div class="meta-item"><label>Employment Type</label><span>${currentJob.type || '—'}</span></div>
+          <div class="meta-item"><label>Qualification Required</label><span>${currentJob.qual || '—'}</span></div>
+          <div class="meta-item"><label>Subject</label><span>${currentJob.subject || '—'}</span></div>
+          <div class="meta-item"><label>Application Deadline</label><span>${deadline}</span></div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <h3>📝 Job Description</h3>
+        <p class="job-desc-text">${currentJob.desc}</p>
+      </div>
+
+      ${sp.email || sp.phone ? `
+      <div class="detail-card">
+        <h3>📞 School Contact</h3>
+        <div class="meta-grid">
+          ${sp.email ? '<div class="meta-item"><label>Email</label><span><a href="mailto:' + sp.email + '" style="color:var(--sage)">' + sp.email + '</a></span></div>' : ''}
+          ${sp.phone ? '<div class="meta-item"><label>Phone</label><span><a href="tel:' + sp.phone + '" style="color:var(--sage)">' + sp.phone + '</a></span></div>' : ''}
+          ${sp.website ? '<div class="meta-item"><label>Website</label><span><a href="' + sp.website + '" target="_blank" style="color:var(--sage)">' + sp.website + '</a></span></div>' : ''}
+        </div>
+      </div>` : ''}
+
+      <div style="height:80px"></div>
+    `;
+
+    // Set apply bar
+    document.getElementById('barTitle').textContent  = currentJob.title;
+    document.getElementById('barSchool').textContent = currentJob.school + ' · ' + currentJob.location;
+    document.getElementById('applyBar').style.display = 'flex';
+    if (currentJob.easyApply) {
+      const btn = document.getElementById('applyBarBtn');
+      btn.textContent = '⚡ Easy Apply';
+      btn.style.background = '#2a9d4e';
+      btn.style.borderColor = '#2a9d4e';
+      document.getElementById('coverNote').textContent = '(not required for Easy Apply)';
+    }
+
+    // Set save button state
+    const saved = getSavedJobs();
+    if (saved.some(s => s.id === currentJob.id)) {
+      const btn = document.getElementById('saveBarBtn');
+      btn.textContent = '✅ Saved';
+      btn.classList.add('btn--primary');
+    }
+  }
+
+  loadJob();
+</script>
+</body>
+</html>

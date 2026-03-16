@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>School Dashboard — Teacher-Hub</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body { background: var(--paper); }
+    .dash-wrapper { display:grid; grid-template-columns:240px 1fr; min-height:calc(100vh - 64px); }
+    @media(max-width:768px){ .dash-wrapper { grid-template-columns:1fr; } .dash-sidebar { display:none; } .dash-sidebar.open { display:block; position:fixed; inset:0; z-index:150; overflow-y:auto; } }
+    .dash-sidebar { background:var(--ink); padding:32px 0; }
+    .dash-sidebar-logo { padding:0 24px 24px; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:16px; font-family:var(--font-serif); font-size:18px; color:#fff; display:flex; align-items:center; gap:8px; }
+    .dash-sidebar-logo span { color:var(--sage-light); }
+    .dash-user-card { margin:0 16px 8px; padding:14px 16px; background:rgba(255,255,255,.06); border-radius:var(--radius-lg); display:flex; align-items:center; gap:12px; }
+    .dash-user-avatar { width:38px; height:38px; border-radius:50%; background:var(--sage); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-serif); font-size:15px; font-weight:700; flex-shrink:0; }
+    .dash-user-name { font-size:13px; font-weight:600; color:#fff; line-height:1.3; }
+    .dash-user-role { font-size:11px; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.5px; }
+    .nav-section-label { font-family:var(--font-mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.3); padding:16px 24px 8px; }
+    .dash-nav-item { padding:11px 24px; cursor:pointer; font-size:14px; font-weight:500; display:flex; align-items:center; gap:10px; transition:background .15s; color:rgba(255,255,255,.65); border:none; background:none; width:100%; text-align:left; }
+    .dash-nav-item:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .dash-nav-item.active { background:var(--sage); color:#fff; }
+    .dash-nav-item .nav-icon { font-size:16px; width:20px; text-align:center; }
+    .dash-main { padding:40px; overflow-y:auto; }
+    @media(max-width:600px){ .dash-main { padding:24px 16px; } }
+    .dash-topbar { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; flex-wrap:wrap; gap:16px; }
+    .dash-topbar h2 { font-size:26px; font-family:var(--font-serif); }
+    .dash-topbar p { color:var(--muted); margin-top:4px; font-size:14px; }
+    .dash-panel { display:none; }
+    .dash-panel.active { display:block; }
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:32px; }
+    @media(max-width:700px){ .stats-row { grid-template-columns:1fr 1fr; } }
+    .stat-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px 24px; }
+    .stat-card .s-num { font-family:var(--font-serif); font-size:30px; line-height:1; }
+    .stat-card .s-label { font-size:13px; color:var(--muted); margin-top:6px; }
+    .stat-card .s-icon { font-size:28px; margin-bottom:10px; }
+    .profile-banner { background:var(--ink); border-radius:var(--radius-lg); padding:32px; margin-bottom:28px; color:#fff; display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+    .profile-big-avatar { width:80px; height:80px; border-radius:12px; flex-shrink:0; background:var(--sage); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-serif); font-size:32px; border:3px solid var(--sage-light); overflow:hidden; }
+    .profile-big-avatar img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
+    .avatar-upload-wrap { position:relative; flex-shrink:0; }
+    .avatar-upload-btn { position:absolute; bottom:-2px; right:-2px; width:26px; height:26px; border-radius:50%; background:var(--sage); color:#fff; border:2px solid #fff; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; }
+    .dash-user-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .profile-banner-info h2 { font-size:24px; color:#fff; margin-bottom:4px; }
+    .profile-banner-info p { font-size:14px; color:rgba(255,255,255,.6); }
+    .profile-banner-badges { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .section-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px; margin-bottom:24px; }
+    .section-card h3 { font-family:var(--font-serif); font-size:20px; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .posted-job-card { background:var(--paper); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+    .posted-job-card:last-child { margin-bottom:0; }
+    .posted-job-title { font-family:var(--font-serif); font-size:16px; margin-bottom:4px; }
+    .posted-job-meta { font-size:13px; color:var(--muted); }
+    .job-status-badge { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+    .status-pending  { background:rgba(212,130,10,.12); color:var(--amber); border:1px solid var(--amber); }
+    .status-approved { background:rgba(26,79,160,.1); color:var(--sage); border:1px solid var(--sage); }
+    .post-job-form { max-width:680px; }
+    .premium-promo { background:linear-gradient(135deg,#0d2d6e,#1a4fa0); border-radius:var(--radius-lg); padding:24px; color:#fff; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .premium-promo h3 { color:#fff; font-size:17px; margin-bottom:6px; }
+    .premium-promo p { color:rgba(255,255,255,.7); font-size:13px; }
+    .mobile-dash-toggle { display:none; position:fixed; bottom:24px; right:24px; width:52px; height:52px; border-radius:50%; background:var(--sage); color:#fff; border:none; cursor:pointer; font-size:22px; box-shadow:0 4px 16px rgba(0,0,0,.2); z-index:100; align-items:center; justify-content:center; }
+    @media(max-width:768px){ .mobile-dash-toggle { display:flex; } }
+    .applicant-card { background:var(--paper); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:14px; }
+    .applicant-card:last-child { margin-bottom:0; }
+    .applicant-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:10px; }
+    .applicant-name { font-family:var(--font-serif); font-size:16px; font-weight:700; }
+    .applicant-meta { font-size:13px; color:var(--muted); margin-top:3px; }
+    .applicant-cover { font-size:13px; color:var(--muted); line-height:1.7; background:var(--cream); border-radius:var(--radius); padding:12px 14px; margin-top:10px; }
+    .applicant-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    .app-status-badge { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+    .app-pending  { background:rgba(212,130,10,.12); color:var(--amber); border:1px solid var(--amber); }
+    .app-accepted { background:rgba(26,79,160,.1); color:var(--sage); border:1px solid var(--sage); }
+    .app-rejected { background:rgba(200,50,50,.08); color:#c83232; border:1px solid #c83232; }
+    .job-select-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+    .job-tab { padding:7px 16px; border-radius:20px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:var(--paper); font-family:var(--font-sans); transition:all .15s; }
+    .job-tab.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<script>
+(function(){
+  const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+  if (!u || u.role !== 'school') {
+    location.replace(u && u.role === 'teacher' ? 'dashboard.html' : 'index.html');
+  }
+})();
+</script>
+
+<div class="dash-wrapper">
+  <aside class="dash-sidebar" id="dashSidebar">
+    <div class="dash-sidebar-logo">
+      <a href="index.html" style="color:#fff;font-family:var(--font-serif)">Teacher<span>Hub</span></a>
+    </div>
+    <div class="dash-user-card">
+      <div class="dash-user-avatar" id="sidebarAvatar">?</div>
+      <div>
+        <div class="dash-user-name" id="sidebarName">Loading…</div>
+        <div class="dash-user-role">School Administrator</div>
+      </div>
+    </div>
+    <div class="nav-section-label">My School</div>
+    <button class="dash-nav-item active" onclick="switchPanel('overview',this)"><span class="nav-icon">🏠</span> Overview</button>
+    <button class="dash-nav-item" onclick="switchPanel('profile',this)"><span class="nav-icon">🏫</span> School Profile</button>
+    <button class="dash-nav-item" onclick="switchPanel('postjob',this)"><span class="nav-icon">➕</span> Post a Job</button>
+    <button class="dash-nav-item" onclick="switchPanel('jobs',this)"><span class="nav-icon">📋</span> My Job Posts</button>
+    <button class="dash-nav-item" onclick="switchPanel('applicants',this)"><span class="nav-icon">📩</span> Applicants</button>
+    <div class="nav-section-label">Explore</div>
+    <button class="dash-nav-item" onclick="location.href='teachers.html'"><span class="nav-icon">👩‍🏫</span> Find Teachers</button>
+    <button class="dash-nav-item" onclick="location.href='notes.html'"><span class="nav-icon">📚</span> Notes Marketplace</button>
+    <div class="nav-section-label">Account</div>
+    <button class="dash-nav-item" onclick="location.href='index.html'"><span class="nav-icon">🌐</span> Back to Site</button>
+    <button class="dash-nav-item" onclick="TH.logout();location.href='index.html'"><span class="nav-icon">🚪</span> Logout</button>
+  </aside>
+
+  <main class="dash-main">
+
+    <!-- Overview -->
+    <div class="dash-panel active" id="panel-overview">
+      <div class="dash-topbar">
+        <div><h2 id="welcomeHeading">Welcome back!</h2><p>Manage your school's presence on Teacher-Hub</p></div>
+        <span id="dashDate" style="font-family:var(--font-mono);font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="s-icon">💼</div><div class="s-num" id="activeJobs">0</div><div class="s-label">Active Job Posts</div></div>
+        <div class="stat-card"><div class="s-icon">📩</div><div class="s-num" id="totalJobs">0</div><div class="s-label">Total Job Posts</div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="switchPanel('applicants',document.querySelector('[onclick*=applicants]'))"><div class="s-icon">📩</div><div class="s-num" id="totalApplicants">0</div><div class="s-label">Total Applicants</div></div>
+      </div>
+      <div class="premium-promo">
+        <div><h3>⭐ Feature Your Job Posts</h3><p>Premium listings appear at the top of the board and get 3× more applications.</p></div>
+        <button class="btn btn--white btn--sm" onclick="TH.toast('Premium listings coming soon! 🚀')">Go Premium</button>
+      </div>
+      <div class="section-card">
+        <h3>💼 Recent Job Posts</h3>
+        <div id="recentJobsList"><p style="color:var(--muted);font-size:14px">Loading…</p></div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn--primary btn--sm" onclick="switchPanel('postjob',document.querySelector('[onclick*=postjob]'))">+ Post New Job</button>
+          <button class="btn btn--outline btn--sm" onclick="switchPanel('jobs',document.querySelector('[onclick*=\"jobs\",]'))">View All Posts</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- School Profile -->
+    <div class="dash-panel" id="panel-profile">
+      <div class="dash-topbar">
+        <div><h2>School Profile</h2><p>Update your school's public information</p></div>
+        <button class="btn btn--primary" onclick="saveSchoolProfile()">Save Changes</button>
+      </div>
+      <div class="profile-banner">
+        <div class="avatar-upload-wrap">
+          <div class="profile-big-avatar" id="schoolAvatar">🏫</div>
+          <button class="avatar-upload-btn" onclick="triggerSchoolPhoto()" title="Change logo">📷</button>
+          <input type="file" id="schoolPhotoInput" accept="image/*" style="display:none" onchange="uploadSchoolPhoto(this)"/>
+        </div>
+        <div class="profile-banner-info">
+          <h2 id="schoolNameDisplay">Loading…</h2>
+          <p id="schoolLocationDisplay">📍 —</p>
+          <div class="profile-banner-badges">
+            <span class="badge badge--sage" id="schoolTypeBadge">School Type</span>
+            <span class="badge badge--outline" style="border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.7)" id="schoolEstBadge">Est. —</span>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <h3>🏫 School Information</h3>
+        <div class="form-group"><label>School Name</label><input type="text" id="s-schoolName" oninput="document.getElementById('schoolNameDisplay').textContent=this.value"/></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>School Type</label>
+            <select id="s-schoolType">
+              <option>Private School</option>
+              <option>Public School</option>
+              <option>Mission School</option>
+              <option>Community School</option>
+              <option>International School</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Year Established</label><input type="number" id="s-estYear" min="1800" max="2026"/></div>
+        </div>
+        <div class="form-group"><label>Location (City, County)</label><input type="text" id="s-location" oninput="document.getElementById('schoolLocationDisplay').textContent='📍 '+this.value"/></div>
+        <div class="form-group"><label>School Address</label><input type="text" id="s-address" placeholder="Street address, area"/></div>
+      </div>
+      <div class="section-card">
+        <h3>📞 Contact Details</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Administrator Name</label><input type="text" id="s-adminName" placeholder="Your full name"/></div>
+          <div class="form-group"><label>Role / Title</label><input type="text" id="s-adminRole" placeholder="e.g. Principal, HR Manager"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Work Email</label><input type="email" id="s-email" placeholder="admin@school.edu.lr"/></div>
+          <div class="form-group"><label>Phone Number</label><input type="tel" id="s-phone" placeholder="+231 77 000 0000"/></div>
+        </div>
+        <div class="form-group"><label>School Website <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input type="url" id="s-website" placeholder="https://www.yourschool.edu.lr"/></div>
+      </div>
+      <div class="section-card">
+        <h3>📝 About the School</h3>
+        <div class="form-group"><label>School Description</label><textarea id="s-bio" style="min-height:130px" placeholder="Describe your school's mission, values, and what makes it a great place to teach…"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Number of Students</label><input type="number" id="s-students" placeholder="e.g. 450"/></div>
+          <div class="form-group"><label>Number of Teachers</label><input type="number" id="s-teachers" placeholder="e.g. 32"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post a Job -->
+    <div class="dash-panel" id="panel-postjob">
+      <div class="dash-topbar">
+        <div><h2>Post a Job Vacancy</h2><p>Fill in the details — your post goes live after admin approval</p></div>
+      </div>
+      <div class="post-job-form">
+        <div class="section-card">
+          <h3>💼 Job Details</h3>
+          <form onsubmit="handlePostJob(event)">
+            <div class="form-group"><label>Job Title / Position *</label><input type="text" id="pj-title" placeholder="e.g. Grade 10 Mathematics Teacher" required/></div>
+            <div class="form-row">
+              <div class="form-group"><label>Subject *</label><input type="text" id="pj-subject" placeholder="e.g. Mathematics, Biology…" required/></div>
+              <div class="form-group">
+                <label>Employment Type *</label>
+                <select id="pj-type" required>
+                  <option value="">Select…</option>
+                  <option>Full-time</option>
+                  <option>Part-time</option>
+                  <option>Contract</option>
+                  <option>Substitute / Relief</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group"><label>Job Description *</label><textarea id="pj-desc" style="min-height:130px" placeholder="Describe the role, responsibilities, class sizes…" required></textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label>Required Qualification *</label><input type="text" id="pj-qual" placeholder="e.g. B.Ed or Diploma in Education" required/></div>
+              <div class="form-group"><label>Location *</label><input type="text" id="pj-location" placeholder="e.g. Monrovia, Montserrado" required/></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Salary <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input type="text" id="pj-salary" placeholder="e.g. L$5,000 – L$6,500/mo"/></div>
+              <div class="form-group"><label>Application Deadline *</label><input type="date" id="pj-deadline" required/></div>
+            </div>
+            <div style="background:#f0f9f0;border:1.5px solid #2a9d4e;border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;display:flex;align-items:flex-start;gap:14px">
+              <input type="checkbox" id="pj-easyapply" style="width:18px;height:18px;margin-top:2px;accent-color:var(--sage);flex-shrink:0"/>
+              <div>
+                <label for="pj-easyapply" style="font-size:14px;font-weight:700;color:var(--ink);cursor:pointer">⚡ Enable Easy Apply</label>
+                <p style="font-size:12px;color:var(--muted);margin-top:3px">Teachers can apply instantly with one click — no cover letter required. Great for getting more applications fast.</p>
+              </div>
+            </div>
+            <div style="background:var(--cream);border-radius:var(--radius);padding:12px 16px;font-size:13px;color:var(--muted);margin-bottom:20px">
+              📋 Your job post will be reviewed by a Teacher-Hub admin before going live. This usually takes less than 24 hours.
+            </div>
+            <div style="display:flex;gap:12px">
+              <button type="submit" class="btn btn--primary">Submit Job Post</button>
+              <button type="reset" class="btn btn--outline">Clear Form</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applicants -->
+    <div class="dash-panel" id="panel-applicants">
+      <div class="dash-topbar">
+        <div><h2>Applicants</h2><p>Teachers who applied to your job posts</p></div>
+      </div>
+      <div class="section-card">
+        <h3>📩 Applications Received</h3>
+        <div class="job-select-tabs" id="jobTabs"></div>
+        <div id="applicantsList"><p style="color:var(--muted);font-size:14px">Loading…</p></div>
+      </div>
+    </div>
+
+    <!-- My Job Posts -->
+    <div class="dash-panel" id="panel-jobs">
+      <div class="dash-topbar">
+        <div><h2>My Job Posts</h2><p>All vacancies you have submitted</p></div>
+        <button class="btn btn--primary btn--sm" onclick="switchPanel('postjob',document.querySelector('[onclick*=postjob]'))">+ Post New Job</button>
+      </div>
+      <div class="section-card">
+        <h3>📋 All Job Posts</h3>
+        <div id="allJobsList"><p style="color:var(--muted);font-size:14px">Loading…</p></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<button class="mobile-dash-toggle" onclick="document.getElementById('dashSidebar').classList.toggle('open')">☰</button>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+  if (!u) location.replace('index.html');
+
+  function switchPanel(id, el) {
+    document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.dash-nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    if (el) el.classList.add('active');
+    document.getElementById('dashSidebar').classList.remove('open');
+  }
+
+  async function saveSchoolProfile() {
+    const schoolName  = document.getElementById('s-schoolName').value.trim();
+    const schoolType  = document.getElementById('s-schoolType').value;
+    const location    = document.getElementById('s-location').value.trim();
+    const address     = document.getElementById('s-address').value.trim();
+    const adminName   = document.getElementById('s-adminName').value.trim();
+    const adminRole   = document.getElementById('s-adminRole').value.trim();
+    const email       = document.getElementById('s-email').value.trim();
+    const phone       = document.getElementById('s-phone').value.trim();
+    const website     = document.getElementById('s-website').value.trim();
+    const bio         = document.getElementById('s-bio').value.trim();
+    const estYear     = document.getElementById('s-estYear').value || null;
+    const numStudents = document.getElementById('s-students').value || null;
+    const numTeachers = document.getElementById('s-teachers').value || null;
+
+    const r1 = await db.from('profiles').update({ full_name: adminName || u.name, phone }).eq('id', u.id);
+    if (r1.error) { TH.toast('⚠️ ' + r1.error.message); return; }
+
+    const { data: existing } = await db.from('school_profiles').select('id').eq('user_id', u.id).maybeSingle();
+    const fields = { school_name: schoolName, school_type: schoolType, city: location, address, admin_name: adminName, admin_role: adminRole, email, phone, website, bio, est_year: estYear, num_students: numStudents ? parseInt(numStudents) : null, num_teachers: numTeachers ? parseInt(numTeachers) : null };
+    let r2;
+    if (existing) {
+      r2 = await db.from('school_profiles').update(fields).eq('user_id', u.id);
+    } else {
+      r2 = await db.from('school_profiles').insert({ user_id: u.id, ...fields });
+    }
+    if (r2.error) { TH.toast('⚠️ ' + r2.error.message); return; }
+
+    document.getElementById('schoolTypeBadge').textContent = schoolType;
+    if (estYear) document.getElementById('schoolEstBadge').textContent = 'Est. ' + estYear;
+    document.getElementById('schoolNameDisplay').textContent = schoolName;
+    if (location) document.getElementById('schoolLocationDisplay').textContent = '📍 ' + location;
+
+    TH.toast('School profile saved ✅');
+  }
+
+  async function handlePostJob(e) {
+    e.preventDefault();
+    const { data: sp } = await db.from('school_profiles').select('id').eq('user_id', u.id).single();
+    if (!sp) { TH.toast('⚠️ Please save your school profile first.'); return; }
+
+    const { error } = await db.from('jobs').insert({
+      school_id:     sp.id,
+      title:         document.getElementById('pj-title').value.trim(),
+      subject:       document.getElementById('pj-subject').value.trim(),
+      location:      document.getElementById('pj-location').value.trim(),
+      deadline:      document.getElementById('pj-deadline').value,
+      job_type:      document.getElementById('pj-type').value,
+      description:   document.getElementById('pj-desc').value.trim(),
+      qualification: document.getElementById('pj-qual').value.trim(),
+      salary:        document.getElementById('pj-salary').value.trim(),
+      status:        'pending',
+      easy_apply:    document.getElementById('pj-easyapply').checked,
+    });
+    if (error) { TH.toast('⚠️ Failed to post job: ' + error.message); return; }
+
+    TH.toast('Job posted! Awaiting admin approval ✅');
+    e.target.reset();
+    await loadJobs();
+    setTimeout(() => switchPanel('jobs', document.querySelector('[onclick*="panel-jobs"]')), 1200);
+  }
+
+  async function loadJobs() {
+    const { data: spRow } = await db.from('school_profiles').select('id').eq('user_id', u.id).maybeSingle();
+    if (!spRow) return;
+
+    const { data: jobs } = await db.from('jobs').select('*').eq('school_id', spRow.id).order('created_at', { ascending: false });
+
+    if (jobs && jobs.length > 0) {
+      document.getElementById('activeJobs').textContent = jobs.filter(j => j.status === 'approved').length;
+      document.getElementById('totalJobs').textContent  = jobs.length;
+
+      const mkCard = j =>
+        '<div class="posted-job-card">' +
+          '<div>' +
+            '<div class="posted-job-title">' + j.title + '</div>' +
+            '<div class="posted-job-meta">📍 ' + (j.location||'') + ' · ' + (j.subject||'') + (j.deadline ? ' · Deadline: ' + new Date(j.deadline).toLocaleDateString('en-LR',{day:'numeric',month:'short',year:'numeric'}) : '') + '</div>' +
+          '</div>' +
+          '<span class="job-status-badge ' + (j.status==='approved' ? 'status-approved' : 'status-pending') + '">' + (j.status==='approved' ? 'Live' : j.status==='rejected' ? 'Rejected' : 'Pending Approval') + '</span>' +
+        '</div>';
+
+      document.getElementById('recentJobsList').innerHTML = jobs.slice(0,3).map(mkCard).join('');
+      document.getElementById('allJobsList').innerHTML    = jobs.map(mkCard).join('');
+    } else {
+      const empty = '<p style="color:var(--muted);font-size:14px">No jobs posted yet.</p>';
+      document.getElementById('recentJobsList').innerHTML = empty;
+      document.getElementById('allJobsList').innerHTML    = empty;
+    }
+  }
+
+  /* ── Applicants ── */
+  let _allApps = [];
+
+  async function loadApplicants() {
+    const { data: spRow } = await db.from('school_profiles').select('id').eq('user_id', u.id).maybeSingle();
+    if (!spRow) return;
+
+    const { data: jobs } = await db.from('jobs').select('id,title').eq('school_id', spRow.id).order('created_at', { ascending: false });
+    if (!jobs || jobs.length === 0) {
+      document.getElementById('jobTabs').innerHTML = '';
+      document.getElementById('applicantsList').innerHTML = '<p style="color:var(--muted);font-size:14px">No job posts yet. Post a job to start receiving applications.</p>';
+      return;
+    }
+
+    const jobIds = jobs.map(j => j.id);
+
+    // Step 1: fetch raw applications
+    const { data: apps } = await db
+      .from('applications')
+      .select('*')
+      .in('job_id', jobIds)
+      .order('created_at', { ascending: false });
+
+    _allApps = apps || [];
+    document.getElementById('totalApplicants').textContent = _allApps.length;
+
+    // Step 2: fetch teacher info separately and merge
+    if (_allApps.length > 0) {
+      const teacherIds = [...new Set(_allApps.map(a => a.teacher_id).filter(Boolean))];
+
+      const { data: profiles } = await db
+        .from('profiles')
+        .select('id, full_name, email, phone')
+        .in('id', teacherIds);
+
+      const { data: tps } = await db
+        .from('teacher_profiles')
+        .select('user_id, qualification, experience, subjects, cv_url')
+        .in('user_id', teacherIds);
+
+      const profileMap = {};
+      const tpMap = {};
+      (profiles || []).forEach(p => profileMap[p.id] = p);
+      (tps || []).forEach(t => tpMap[t.user_id] = t);
+
+      _allApps = _allApps.map(a => ({
+        ...a,
+        teacher: profileMap[a.teacher_id] || null,
+        tp:      tpMap[a.teacher_id]      || null,
+      }));
+    }
+
+    document.getElementById('jobTabs').innerHTML = jobs.map((j, i) => {
+      const count = _allApps.filter(a => a.job_id === j.id).length;
+      return '<button class="job-tab ' + (i===0 ? 'active' : '') + '" data-jid="' + j.id + '" onclick="showAppsForJob(this)">' +
+        j.title +
+        '<span style="background:var(--sage);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px">' + count + '</span>' +
+      '</button>';
+    }).join('');
+
+    renderApps(jobs[0].id);
+  }
+
+  function showAppsForJob(btn) {
+    document.querySelectorAll('.job-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderApps(btn.getAttribute('data-jid'));
+  }
+
+  function renderApps(jobId) {
+    const list = _allApps.filter(a => a.job_id === jobId);
+    const container = document.getElementById('applicantsList');
+    if (list.length === 0) {
+      container.innerHTML = '<p style="color:var(--muted);font-size:14px">No applications yet for this job.</p>';
+      return;
+    }
+    container.innerHTML = list.map(a => {
+      const name  = (a.teacher && a.teacher.full_name) ? a.teacher.full_name : 'Unknown';
+      const email = (a.teacher && a.teacher.email)     ? a.teacher.email     : '';
+      const phone = (a.teacher && a.teacher.phone)     ? a.teacher.phone     : '';
+      const qual  = (a.tp && a.tp.qualification) ? a.tp.qualification : '—';
+      const exp   = (a.tp && a.tp.experience)    ? a.tp.experience    : '—';
+      const subj  = (a.tp && a.tp.subjects)      ? a.tp.subjects      : '—';
+      const cv    = (a.tp && a.tp.cv_url)        ? a.tp.cv_url        : '';
+      const sc    = a.status === 'accepted' ? 'app-accepted' : a.status === 'rejected' ? 'app-rejected' : 'app-pending';
+      const sl    = a.status === 'accepted' ? '✅ Accepted'  : a.status === 'rejected' ? '❌ Rejected'  : '⏳ Pending';
+      return '<div class="applicant-card">' +
+        '<div class="applicant-top">' +
+          '<div>' +
+            '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">' +
+              '<div class="applicant-name">' + name + '</div>' +
+              '<a href="teacher-profile.html?id=' + a.teacher_id + '" target="_blank" class="btn btn--ghost btn--sm" style="font-size:12px;padding:3px 10px">👤 View Profile</a>' +
+            '</div>' +
+            '<div class="applicant-meta">' +
+              (email ? '📧 ' + email + '&nbsp;&nbsp;' : '') +
+              (phone ? '📞 ' + phone + '&nbsp;&nbsp;' : '') +
+              '🎓 ' + qual + ' &nbsp;·&nbsp; 🕐 ' + exp + ' &nbsp;·&nbsp; 📚 ' + subj +
+            '</div>' +
+          '</div>' +
+          '<span class="app-status-badge ' + sc + '">' + sl + '</span>' +
+        '</div>' +
+        '<div class="applicant-cover">' +
+          (a.cover_letter && a.cover_letter.trim()
+            ? '<strong>Cover Letter:</strong><br>' + a.cover_letter
+            : '<span style="color:var(--amber);font-weight:600">⚡ Easy Apply</span> — <em>No cover letter submitted. Applicant has committed to bringing one to the interview if accepted.</em>'
+          ) +
+        '</div>' +
+        '<div class="applicant-actions">' +
+          (a.status !== 'accepted' ? '<button class="btn btn--primary btn--sm" data-aid="' + a.id + '" data-st="accepted" onclick="updateAppStatus(this)">✅ Accept</button>' : '') +
+          (a.status !== 'rejected' ? '<button class="btn btn--outline btn--sm" data-aid="' + a.id + '" data-st="rejected" onclick="updateAppStatus(this)" style="color:#c83232;border-color:#c83232">❌ Reject</button>' : '') +
+          (cv    ? '<a href="' + cv + '" target="_blank" class="btn btn--ghost btn--sm">📄 View CV</a>' : '') +
+          (email ? '<a href="mailto:' + email + '" class="btn btn--ghost btn--sm">📧 Email</a>' : '') +
+          (phone ? '<a href="tel:' + phone + '" class="btn btn--ghost btn--sm">📞 Call</a>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  async function updateAppStatus(btn) {
+    const aid    = btn.getAttribute('data-aid');
+    const status = btn.getAttribute('data-st');
+    const { error } = await db.from('applications').update({ status }).eq('id', aid);
+    if (error) { TH.toast('⚠️ ' + error.message); return; }
+    TH.toast(status === 'accepted' ? '✅ Application accepted!' : '❌ Application rejected');
+    await loadApplicants();
+  }
+
+  /* ── Cloudinary School Photo Upload ── */
+  const CLOUD_NAME = 'dtkbt5qdx';
+  const UPLOAD_PRESET = 'teacher-hub-avatars';
+  let currentSchoolPhoto = '';
+
+  function triggerSchoolPhoto() {
+    document.getElementById('schoolPhotoInput').click();
+  }
+
+  async function uploadSchoolPhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { TH.toast('⚠️ Photo must be under 2MB'); return; }
+
+    TH.toast('Uploading logo…');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', 'teacher-hub/schools');
+
+    try {
+      const res  = await fetch('https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload', { method:'POST', body: formData });
+      const data = await res.json();
+      if (data.secure_url) {
+        currentSchoolPhoto = data.secure_url;
+        setSchoolPhoto(currentSchoolPhoto);
+        const { data: existing } = await db.from('school_profiles').select('id').eq('user_id', u.id).maybeSingle();
+        if (existing) {
+          await db.from('school_profiles').update({ photo_url: currentSchoolPhoto }).eq('user_id', u.id);
+        } else {
+          await db.from('school_profiles').insert({ user_id: u.id, photo_url: currentSchoolPhoto });
+        }
+        TH.toast('School logo updated! ✅');
+      } else {
+        TH.toast('⚠️ Upload failed. Try again.');
+      }
+    } catch(err) {
+      TH.toast('⚠️ Upload error: ' + err.message);
+    }
+    input.value = '';
+  }
+
+  function setSchoolPhoto(url) {
+    const avatar = document.getElementById('schoolAvatar');
+    const small  = document.getElementById('sidebarAvatar');
+    if (url) {
+      avatar.innerHTML = '<img src="' + url + '" alt="School logo"/>';
+      small.innerHTML  = '<img src="' + url + '" alt=""/>';
+      small.style.background = 'transparent';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!u) return;
+    const initials = TH.initials(u.name);
+    const color    = TH.avatarColor(u.name);
+
+    document.getElementById('sidebarAvatar').textContent      = initials;
+    document.getElementById('sidebarAvatar').style.background = color;
+    document.getElementById('sidebarName').textContent        = u.name;
+    document.getElementById('welcomeHeading').textContent     = 'Welcome back, ' + u.name.split(' ')[0] + '!';
+    document.getElementById('dashDate').textContent           = new Date().toLocaleDateString('en-LR', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+    // Load school profile
+    const sessionSchoolName = u.schoolName || u.name || '';
+    document.getElementById('schoolNameDisplay').textContent = sessionSchoolName;
+    document.getElementById('s-schoolName').value = sessionSchoolName;
+
+    const { data: sp } = await db.from('school_profiles').select('*').eq('user_id', u.id).maybeSingle();
+    if (sp) {
+      document.getElementById('s-schoolName').value  = sp.school_name || sessionSchoolName;
+      document.getElementById('s-location').value    = sp.city        || '';
+      document.getElementById('s-address').value     = sp.address     || '';
+      document.getElementById('s-website').value     = sp.website     || '';
+      document.getElementById('s-bio').value         = sp.bio         || '';
+      document.getElementById('s-adminName').value   = sp.admin_name  || u.name || '';
+      document.getElementById('s-adminRole').value   = sp.admin_role  || '';
+      document.getElementById('s-email').value       = sp.email       || '';
+      document.getElementById('s-phone').value       = sp.phone       || '';
+      document.getElementById('s-students').value    = sp.num_students || '';
+      document.getElementById('s-teachers').value    = sp.num_teachers || '';
+      if (sp.school_type) document.getElementById('s-schoolType').value = sp.school_type;
+      if (sp.est_year) { document.getElementById('s-estYear').value = sp.est_year; document.getElementById('schoolEstBadge').textContent = 'Est. ' + sp.est_year; }
+      document.getElementById('schoolNameDisplay').textContent    = sp.school_name || sessionSchoolName;
+      document.getElementById('schoolLocationDisplay').textContent = sp.city ? '📍 ' + sp.city : '📍 —';
+      if (sp.school_type) document.getElementById('schoolTypeBadge').textContent = sp.school_type;
+    } else {
+      // Create placeholder row
+      if (u.id && sessionSchoolName) {
+        await db.from('school_profiles').insert({ user_id: u.id, school_name: sessionSchoolName });
+      }
+    }
+
+    await loadJobs();
+    await loadApplicants();
+  });
+</script>
+</body>
+</html>
