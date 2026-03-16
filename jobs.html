@@ -188,7 +188,6 @@
       salary:      j.salary        || 'Negotiable',
       deadline:    j.deadline      || '',
       premium:     j.is_premium    || false,
-      easyApply:   j.easy_apply    || false,
     }));
 
     renderJobs();
@@ -213,7 +212,7 @@
       if (kw   && !j.title.toLowerCase().includes(kw) && !j.school.toLowerCase().includes(kw)) return false;
       if (subj && !j.subject.toLowerCase().includes(subj)) return false;
       if (loc  && !j.location.toLowerCase().includes(loc)) return false;
-      if (type && j.type.toLowerCase() !== type.toLowerCase()) return false;
+      if (type && j.type !== type) return false;
       return true;
     });
 
