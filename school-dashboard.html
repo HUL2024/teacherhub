@@ -517,7 +517,7 @@
   async function deleteJob(btn) {
     const jid   = btn.getAttribute('data-jid');
     const title = btn.getAttribute('data-title');
-    if (!confirm('Delete job "' + title + '"? This cannot be undone.')) return;
+    if (!confirm('Delete "' + title + '"? This cannot be undone.')) return;
     btn.disabled = true;
     const { error } = await db.from('jobs').delete().eq('id', jid);
     if (error) { TH.toast('⚠️ ' + error.message); btn.disabled = false; return; }
@@ -539,44 +539,45 @@
   function openEditJob(btn) {
     const jid = btn.getAttribute('data-jid');
     _editJobId = jid;
-    // Find job from DOM or re-fetch
     const existing = document.getElementById('editJobOverlay');
     if (existing) existing.remove();
-
     const overlay = document.createElement('div');
     overlay.id = 'editJobOverlay';
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px';
-    overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
-    overlay.innerHTML =
-      '<div style="background:#fff;border-radius:12px;max-width:560px;width:100%;padding:32px;position:relative;max-height:90vh;overflow-y:auto">' +
-        '<button onclick="document.getElementById('editJobOverlay').remove()" style="position:absolute;top:14px;right:18px;border:none;background:none;font-size:22px;cursor:pointer;color:#666">×</button>' +
-        '<h3 style="font-family:var(--font-serif);font-size:22px;margin-bottom:20px">✏️ Edit Job</h3>' +
-        '<div class="form-group"><label>Job Title *</label><input type="text" id="ej-title" required/></div>' +
-        '<div class="form-group"><label>Subject</label><input type="text" id="ej-subject"/></div>' +
-        '<div class="form-group"><label>Location</label><input type="text" id="ej-location"/></div>' +
-        '<div class="form-group"><label>Employment Type</label><select id="ej-type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Substitute / Relief</option></select></div>' +
-        '<div class="form-group"><label>Description</label><textarea id="ej-desc" style="min-height:100px"></textarea></div>' +
-        '<div class="form-group"><label>Required Qualification</label><input type="text" id="ej-qual"/></div>' +
-        '<div class="form-group"><label>Salary</label><input type="text" id="ej-salary"/></div>' +
-        '<div class="form-group"><label>Deadline</label><input type="date" id="ej-deadline"/></div>' +
-        '<div style="display:flex;gap:10px;margin-top:8px">' +
-          '<button class="btn btn--primary" style="flex:1" onclick="saveEditJob()">Save Changes</button>' +
-          '<button class="btn btn--outline" onclick="document.getElementById('editJobOverlay').remove()">Cancel</button>' +
-        '</div>' +
-      '</div>';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = [
+      '<div style="background:#fff;border-radius:12px;max-width:560px;width:100%;padding:32px;position:relative;max-height:90vh;overflow-y:auto">',
+        '<button id="ejClose" style="position:absolute;top:14px;right:18px;border:none;background:none;font-size:22px;cursor:pointer;color:#666">×</button>',
+        '<h3 style="font-family:var(--font-serif);font-size:22px;margin-bottom:20px">✏️ Edit Job</h3>',
+        '<div class="form-group"><label>Job Title *</label><input type="text" id="ej-title" required/></div>',
+        '<div class="form-group"><label>Subject</label><input type="text" id="ej-subject"/></div>',
+        '<div class="form-group"><label>Location</label><input type="text" id="ej-location"/></div>',
+        '<div class="form-group"><label>Employment Type</label><select id="ej-type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Substitute / Relief</option></select></div>',
+        '<div class="form-group"><label>Description</label><textarea id="ej-desc" style="min-height:100px"></textarea></div>',
+        '<div class="form-group"><label>Required Qualification</label><input type="text" id="ej-qual"/></div>',
+        '<div class="form-group"><label>Salary</label><input type="text" id="ej-salary"/></div>',
+        '<div class="form-group"><label>Deadline</label><input type="date" id="ej-deadline"/></div>',
+        '<div style="display:flex;gap:10px;margin-top:8px">',
+          '<button id="ejSave" class="btn btn--primary" style="flex:1">Save Changes</button>',
+          '<button id="ejCancel" class="btn btn--outline">Cancel</button>',
+        '</div>',
+      '</div>'
+    ].join('');
     document.body.appendChild(overlay);
-
-    // Load current job data
-    db.from('jobs').select('*').eq('id', jid).single().then(({ data: j }) => {
+    document.getElementById('ejClose').onclick  = function() { overlay.remove(); };
+    document.getElementById('ejCancel').onclick = function() { overlay.remove(); };
+    document.getElementById('ejSave').onclick   = saveEditJob;
+    db.from('jobs').select('*').eq('id', jid).single().then(function(res) {
+      const j = res.data;
       if (!j) return;
-      document.getElementById('ej-title').value    = j.title    || '';
-      document.getElementById('ej-subject').value  = j.subject  || '';
-      document.getElementById('ej-location').value = j.location || '';
-      document.getElementById('ej-type').value     = j.job_type || 'Full-time';
-      document.getElementById('ej-desc').value     = j.description || '';
+      document.getElementById('ej-title').value    = j.title         || '';
+      document.getElementById('ej-subject').value  = j.subject       || '';
+      document.getElementById('ej-location').value = j.location      || '';
+      document.getElementById('ej-type').value     = j.job_type      || 'Full-time';
+      document.getElementById('ej-desc').value     = j.description   || '';
       document.getElementById('ej-qual').value     = j.qualification || '';
-      document.getElementById('ej-salary').value   = j.salary   || '';
-      document.getElementById('ej-deadline').value = j.deadline || '';
+      document.getElementById('ej-salary').value   = j.salary        || '';
+      document.getElementById('ej-deadline').value = j.deadline      || '';
     });
   }
 
@@ -597,7 +598,8 @@
     const { error } = await db.from('jobs').update(fields).eq('id', _editJobId);
     if (error) { TH.toast('⚠️ ' + error.message); return; }
     TH.toast('Job updated! Awaiting admin approval ✅');
-    document.getElementById('editJobOverlay').remove();
+    const overlay = document.getElementById('editJobOverlay');
+    if (overlay) overlay.remove();
     await loadJobs();
   }
 
