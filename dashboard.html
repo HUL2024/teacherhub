@@ -348,7 +348,15 @@
     const box = document.getElementById('cvCurrentLink');
     if (!box) return;
     box.style.display = 'flex';
-    document.getElementById('cvLink').href = url;
+    // Force direct download URL - not teacher profile
+    const link = document.getElementById('cvLink');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.onclick = function(e) {
+      e.preventDefault();
+      window.open(url, '_blank', 'noopener,noreferrer');
+    };
     if (name) document.getElementById('cvFileName').textContent = name;
   }
 
