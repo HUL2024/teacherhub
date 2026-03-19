@@ -124,6 +124,10 @@
       <span class="nav-icon">⭐</span> Premium Listings
     </div>
 
+    <div class="nav-section-label">ExamVault LR</div>
+    <div class="dash-nav-item" onclick="switchPanel('examvault',this)">
+      <span class="nav-icon">📝</span> Upload to ExamVault
+    </div>
     <div class="nav-section-label">System</div>
     <div class="dash-nav-item" onclick="location.href='index.html'">
       <span class="nav-icon">🏠</span> View Site
@@ -323,6 +327,57 @@
     </div>
 
 
+    <!-- ── ExamVault Upload Panel ── -->
+    <div class="dash-panel" id="panel-examvault">
+      <div class="dash-topbar">
+        <div><h2>Upload to ExamVault LR</h2><p>Add Liberian Curriculum resources or Past WAEC Questions</p></div>
+      </div>
+      <div style="max-width:680px">
+        <div class="section-card">
+          <h3 class="section-heading">📝 Resource Details</h3>
+          <form onsubmit="handleExamVaultUpload(event)">
+            <div class="form-group"><label>Title *</label><input type="text" id="ev-title" placeholder="e.g. WAEC 2023 Mathematics Past Questions" required/></div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="ev-category" required>
+                <option value="Liberian Curriculum">🇱🇷 Liberian Curriculum</option>
+                <option value="Past WAEC Questions">📝 Past WAEC Questions</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Subject *</label><input type="text" id="ev-subject" placeholder="e.g. Mathematics, Biology…" required/></div>
+              <div class="form-group"><label>Grade / Level *</label><input type="text" id="ev-grade" placeholder="e.g. Grade 10, WAEC 2023…" required/></div>
+            </div>
+            <div class="form-group">
+              <label>Cover Photo <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+              <div id="evCoverBox" style="border:2px dashed var(--border);border-radius:var(--radius-lg);padding:20px;text-align:center;cursor:pointer;transition:border-color .2s" onclick="document.getElementById('ev-coverphoto').click()" onmouseover="this.style.borderColor='var(--sage)'" onmouseout="this.style.borderColor='var(--border)'">
+                <div id="evCoverPreview" style="display:none;margin-bottom:10px"><img id="evCoverImg" src="" style="max-height:140px;border-radius:var(--radius);object-fit:cover;width:100%"/></div>
+                <div id="evCoverPlaceholder">📷 <strong>Click to upload cover photo</strong><br><span style="font-size:12px;color:var(--muted)">JPG or PNG · Max 2MB</span></div>
+                <input type="file" id="ev-coverphoto" accept="image/*" style="display:none" onchange="previewEvCover(this)"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Google Drive Link *</label>
+              <input type="url" id="ev-drivelink" placeholder="https://drive.google.com/file/d/…" required/>
+              <p class="hint">Set sharing to "Anyone with the link can view"</p>
+            </div>
+            <div class="form-group"><label>Description *</label><textarea id="ev-preview" style="min-height:100px" placeholder="Brief description of what this resource covers…" required></textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label>Price (L$) — enter 0 for Free</label><input type="number" id="ev-price" min="0" placeholder="e.g. 80" required/></div>
+              <div class="form-group" style="display:flex;align-items:center;gap:12px;padding-top:28px">
+                <label class="toggle" title="Mark as Premium">
+                  <input type="checkbox" id="ev-premium"/>
+                  <span class="toggle-slider"></span>
+                </label>
+                <label for="ev-premium" style="font-size:14px;cursor:pointer">Mark as Premium</label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn--primary">Publish to ExamVault LR</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div><!-- end dash-wrapper -->
 
@@ -451,6 +506,75 @@
 
 
 
+  /* ── ExamVault Upload ── */
+  function previewEvCover(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { TH.toast('⚠️ Photo must be under 2MB'); input.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('evCoverImg').src = e.target.result;
+      document.getElementById('evCoverPreview').style.display = 'block';
+      document.getElementById('evCoverPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadEvCover() {
+    const input = document.getElementById('ev-coverphoto');
+    if (!input.files[0]) return '';
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    formData.append('upload_preset', 'teacher-hub-avatars');
+    formData.append('folder', 'teacher-hub/examvault');
+    try {
+      const res  = await fetch('https://api.cloudinary.com/v1_1/dtkbt5qdx/image/upload', { method:'POST', body: formData });
+      const data = await res.json();
+      return data.secure_url || '';
+    } catch { return ''; }
+  }
+
+  async function handleExamVaultUpload(e) {
+    e.preventDefault();
+    const title    = document.getElementById('ev-title').value.trim();
+    const category = document.getElementById('ev-category').value;
+    const subject  = document.getElementById('ev-subject').value.trim();
+    const grade    = document.getElementById('ev-grade').value.trim();
+    const rawUrl   = document.getElementById('ev-drivelink').value.trim();
+    const driveUrl = (function(url) {
+      if (!url) return '';
+      if (url.includes('uc?export=download')) return url;
+      const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      return m ? 'https://drive.google.com/uc?export=download&id=' + m[1] : url;
+    })(rawUrl);
+    const preview  = document.getElementById('ev-preview').value.trim();
+    const price    = parseInt(document.getElementById('ev-price').value) || 0;
+    const premium  = document.getElementById('ev-premium').checked;
+
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Uploading…';
+
+    const coverUrl = await uploadEvCover();
+    btn.textContent = 'Publishing…';
+
+    const { error } = await db.from('examvault').insert({
+      title, category, subject, grade,
+      file_url:   driveUrl,
+      cover_url:  coverUrl || null,
+      preview, price,
+      is_premium: premium,
+      downloads:  0,
+    });
+
+    btn.disabled = false; btn.textContent = 'Publish to ExamVault LR';
+    if (error) { TH.toast('⚠️ Error: ' + error.message); return; }
+
+    TH.toast('Resource published to ExamVault LR! 🎉');
+    e.target.reset();
+    document.getElementById('evCoverPreview').style.display = 'none';
+    document.getElementById('evCoverPlaceholder').style.display = 'block';
+  }
+
   /* ── Store all users for filtering ── */
   let allUsers = [];
 
@@ -533,10 +657,8 @@
               ? '<span class="dot dot--red"></span>Rejected'
               : '<span class="dot dot--amber"></span>Pending') + '</td>' +
             '<td>' +
-              '<a href="job-detail.html?id=' + j.id + '" target="_blank" class="btn btn--ghost btn--sm">👁 View</a> ' +
               (j.status !== 'approved' ? '<button class="btn btn--primary btn--sm" data-id="' + j.id + '" onclick="approveJob(this)">Approve</button> ' : '') +
               (j.status !== 'rejected' ? '<button class="btn btn--sm" style="border:1.5px solid var(--red);color:var(--red);background:transparent;margin-left:6px" data-id="' + j.id + '" onclick="rejectJob(this)">Reject</button>' : '') +
-              ' <button class="btn btn--sm" style="border:1.5px solid #c83232;color:#c83232;background:transparent;margin-left:6px" data-id="' + j.id + '" onclick="adminDeleteJob(this)">🗑 Delete</button>' +
             '</td>' +
           '</tr>'
         ).join('')
@@ -602,16 +724,6 @@
     const { error } = await db.from('jobs').update({ status: 'approved' }).eq('id', id);
     if (error) { TH.toast('⚠️ Error: ' + error.message); btn.disabled = false; btn.textContent = 'Approve'; return; }
     TH.toast('Job approved ✅');
-    loadAdminData();
-  }
-
-  async function adminDeleteJob(btn) {
-    const id = btn.getAttribute('data-id');
-    if (!confirm('Permanently delete this job? This cannot be undone.')) return;
-    btn.disabled = true;
-    const { error } = await db.from('jobs').delete().eq('id', id);
-    if (error) { TH.toast('⚠️ ' + error.message); btn.disabled = false; return; }
-    TH.toast('Job deleted ✅');
     loadAdminData();
   }
 
