@@ -100,6 +100,7 @@
     <button class="dash-nav-item" onclick="switchPanel('savedjobs',this);loadSavedJobs()"><span class="nav-icon">🔖</span> Saved Jobs</button>
     <button class="dash-nav-item" onclick="location.href='jobs.html'"><span class="nav-icon">💼</span> Browse Jobs</button>
     <button class="dash-nav-item" onclick="location.href='notes.html'"><span class="nav-icon">🛒</span> Notes Marketplace</button>
+    <button class="dash-nav-item" onclick="location.href='examvault.html'"><span class="nav-icon">📝</span> ExamVault LR</button>
     <div class="nav-section-label">Account</div>
     <button class="dash-nav-item" onclick="location.href='index.html'"><span class="nav-icon">🌐</span> Back to Site</button>
     <button class="dash-nav-item" onclick="TH.logout();location.href='index.html'"><span class="nav-icon">🚪</span> Logout</button>
@@ -348,15 +349,7 @@
     const box = document.getElementById('cvCurrentLink');
     if (!box) return;
     box.style.display = 'flex';
-    // Force direct download URL - not teacher profile
-    const link = document.getElementById('cvLink');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.onclick = function(e) {
-      e.preventDefault();
-      window.open(url, '_blank', 'noopener,noreferrer');
-    };
+    document.getElementById('cvLink').href = url;
     if (name) document.getElementById('cvFileName').textContent = name;
   }
 
