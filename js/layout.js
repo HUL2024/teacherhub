@@ -21,8 +21,9 @@ function injectNavbar() {
         <a class="nav-logo" href="index.html">Teacher<span>Hub</span></a>
         <nav class="nav-links" role="navigation" aria-label="Main">
           <a href="index.html" data-page="index">Home</a>
-          <a href="notes.html" data-page="notes">Notes</a>
-          <a href="jobs.html"  data-page="jobs">Jobs</a>
+          <a href="notes.html"     data-page="notes">Notes</a>
+          <a href="examvault.html" data-page="examvault">ExamVault LR</a>
+          <a href="jobs.html"      data-page="jobs">Jobs</a>
           <a href="teachers.html" data-page="teachers">Teachers</a>
         </nav>
         <div class="nav-actions" id="navActions"></div>
@@ -33,6 +34,7 @@ function injectNavbar() {
       <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile">
         <a href="index.html">Home</a>
         <a href="notes.html">Notes</a>
+        <a href="examvault.html">ExamVault LR</a>
         <a href="jobs.html">Jobs</a>
         <a href="teachers.html">Teachers</a>
         <hr class="divider" style="margin:8px 0">
