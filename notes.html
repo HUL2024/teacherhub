@@ -27,8 +27,6 @@
     .note-price { font-family:var(--font-mono); font-size:18px; font-weight:700; color:var(--sage); }
     .note-downloads { font-size:12px; color:var(--muted); }
     .note-card { display:flex; flex-direction:column; }
-    .note-cover { width:100%; height:160px; object-fit:cover; border-radius:var(--radius) var(--radius) 0 0; margin:-24px -24px 16px -24px; width:calc(100% + 48px); display:block; }
-    .note-cover-placeholder { width:calc(100% + 48px); height:140px; margin:-24px -24px 16px -24px; background:linear-gradient(135deg,var(--sage-dark),var(--sage)); display:flex; align-items:center; justify-content:center; font-size:40px; border-radius:var(--radius) var(--radius) 0 0; }
 
     .results-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
     .results-count { font-size:14px; color:var(--muted); }
@@ -194,15 +192,11 @@
       const priceLabel = isFree ? '<span style="color:var(--sage);font-family:var(--font-mono);font-size:18px;font-weight:700">Free</span>'
                                 : '<span class="note-price">L$' + n.price + '</span>';
       const actionBtn = isFree
-        ? '<a href="' + driveDownloadUrl(n.file_url) + '" target="_blank" class="btn btn--primary btn--sm" data-nid="' + n.id + '" onclick="incrementDownload(this.dataset.nid)">Download Free</a>'
+        ? '<button class="btn btn--primary btn--sm" data-nid="' + n.id + '" data-url="' + driveDownloadUrl(n.file_url) + '" onclick="downloadNote(this)">Download Free</button>'
         : '<button class="btn btn--ghost btn--sm" onclick="TH.toast(&quot;Paid notes coming soon! 🚀&quot;)" style="cursor:pointer;opacity:.7;border:1.5px dashed var(--border)">🔒 Coming Soon</button>';
 
       return (
         '<article class="card ' + (n.is_premium ? 'card--premium' : '') + ' note-card">' +
-          (n.cover_url
-            ? '<img src="' + n.cover_url + '" class="note-cover" alt="' + n.title + '"/>'
-            : '<div class="note-cover-placeholder">📚</div>'
-          ) +
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">' +
             '<div class="note-meta" style="margin-bottom:0">' +
               '<span class="tag">' + (n.subject||'') + '</span>' +
@@ -229,6 +223,20 @@
     document.getElementById('priceFilter').value   = '';
     document.getElementById('premiumOnly').checked = false;
     renderNotes();
+  }
+
+  /* ── Download with login check ── */
+  function downloadNote(btn) {
+    const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+    if (!u) {
+      TH.toast('Please log in or sign up to download notes — it's free!');
+      setTimeout(() => TH.openModal('loginModal'), 700);
+      return;
+    }
+    const nid = btn.getAttribute('data-nid');
+    const url = btn.getAttribute('data-url');
+    incrementDownload(nid);
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   /* ── Increment download counter ── */
