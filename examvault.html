@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Liberian Curriculum notes and Past WAEC Questions for students and teachers."/>
+  <title>ExamVault LR — Curriculum & WAEC Resources</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .notes-layout { display:grid; grid-template-columns:260px 1fr; gap:32px; padding:48px 0; }
+    @media(max-width:800px){ .notes-layout{ grid-template-columns:1fr; } }
+
+    .sidebar-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow); margin-bottom:20px; }
+    .sidebar-card h3 { font-size:17px; margin-bottom:18px; }
+    .filter-group { margin-bottom:18px; }
+    .filter-group label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:8px; }
+    .filter-group select, .filter-group input { width:100%; }
+    .filter-group .check-list { display:flex; flex-direction:column; gap:8px; }
+    .check-item { display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; }
+    .check-item input[type=checkbox]{ accent-color:var(--sage); width:15px; height:15px; }
+
+    .notes-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; }
+    .note-card { display:flex; flex-direction:column; }
+    .note-card h3 { font-size:17px; margin-bottom:8px; line-height:1.3; }
+    .note-card p  { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+    .note-meta  { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .note-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:14px; border-top:1px solid var(--border); }
+    .note-price { font-family:var(--font-mono); font-size:18px; font-weight:700; color:var(--sage); }
+    .note-downloads { font-size:12px; color:var(--muted); }
+    .note-cover { width:calc(100% + 48px); height:160px; object-fit:cover; border-radius:var(--radius) var(--radius) 0 0; margin:-24px -24px 16px -24px; display:block; }
+    .note-cover-placeholder { width:calc(100% + 48px); height:140px; margin:-24px -24px 16px -24px; display:flex; align-items:center; justify-content:center; font-size:40px; border-radius:var(--radius) var(--radius) 0 0; }
+    .cover-curriculum { background:linear-gradient(135deg,#0d2d6e,#1a4fa0); }
+    .cover-waec       { background:linear-gradient(135deg,#7a3000,#d4820a); }
+
+    .results-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+    .results-count { font-size:14px; color:var(--muted); }
+    .empty-state { grid-column:1/-1; text-align:center; padding:64px 24px; color:var(--muted); }
+    .empty-state .icon { font-size:48px; margin-bottom:16px; }
+
+    /* Category tabs */
+    .cat-tabs { display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap; }
+    .cat-tab { padding:9px 20px; border-radius:24px; font-size:14px; font-weight:600; cursor:pointer; border:2px solid var(--border); background:var(--paper); transition:all .15s; font-family:var(--font-sans); }
+    .cat-tab.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+    .cat-tab.waec.active { background:var(--amber); border-color:var(--amber); }
+
+    /* Hero override for ExamVault */
+    .ev-hero { background:linear-gradient(135deg,#0d2d6e 0%,#1a4fa0 50%,#d4820a 100%); }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<nav id="navbar"></nav>
+
+<!-- ── Page Hero ── -->
+<header class="page-hero ev-hero">
+  <div class="container">
+    <h1>ExamVault LR</h1>
+    <p>Liberian Curriculum resources & Past WAEC Questions for students and teachers</p>
+  </div>
+</header>
+
+<!-- ── Main Layout ── -->
+<div class="container">
+  <div class="notes-layout">
+
+    <!-- Sidebar Filters -->
+    <aside>
+      <div class="sidebar-card">
+        <h3>🔍 Filter Resources</h3>
+
+        <div class="filter-group">
+          <label>Search</label>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="text" id="searchInput" placeholder="Search resources…" oninput="renderNotes()"/>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Subject</label>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="text" id="subjectFilter" placeholder="e.g. Mathematics, Biology…" oninput="renderNotes()"/>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Grade / Level</label>
+          <div class="form-group" style="margin-bottom:0">
+            <input type="text" id="gradeFilter" placeholder="e.g. Grade 10, WAEC…" oninput="renderNotes()"/>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Price Range</label>
+          <select id="priceFilter" onchange="renderNotes()">
+            <option value="">Any Price</option>
+            <option value="free">Free</option>
+            <option value="1-100">L$1 – L$100</option>
+            <option value="100-250">L$100 – L$250</option>
+            <option value="250-350">L$250 – L$350</option>
+            <option value="350-99999">L$350 and above</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Show</label>
+          <div class="check-list">
+            <label class="check-item">
+              <input type="checkbox" id="premiumOnly" onchange="renderNotes()"/>
+              Premium only
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn--ghost btn--sm btn--block" onclick="clearFilters()" style="margin-top:8px;border:1px solid var(--border)">Clear Filters</button>
+      </div>
+
+      <div class="sidebar-card" style="background:linear-gradient(135deg,#0d2d6e,#1a4fa0);border:none">
+        <h3 style="color:#fff;font-size:15px;margin-bottom:10px">📚 About ExamVault LR</h3>
+        <p style="color:rgba(255,255,255,.7);font-size:13px;line-height:1.7">Your one-stop resource for Liberian Curriculum materials and Past WAEC Questions — built for Liberian students and teachers.</p>
+      </div>
+    </aside>
+
+    <!-- Notes Grid -->
+    <main>
+      <!-- Category Tabs -->
+      <div class="cat-tabs">
+        <button class="cat-tab active" id="tab-all"        onclick="setCategory('all',this)">📖 All Resources</button>
+        <button class="cat-tab"        id="tab-curriculum" onclick="setCategory('Liberian Curriculum',this)">🇱🇷 Liberian Curriculum</button>
+        <button class="cat-tab waec"   id="tab-waec"       onclick="setCategory('Past WAEC Questions',this)">📝 Past WAEC Questions</button>
+      </div>
+
+      <div class="results-header">
+        <div>
+          <h2 style="font-size:22px" class="section-title" id="pageTitle">All Resources</h2>
+          <p class="results-count" id="resultsCount"></p>
+        </div>
+        <select id="sortFilter" onchange="renderNotes()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font-sans);font-size:14px;background:var(--paper)">
+          <option value="popular">Most Popular</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+      <div class="notes-grid" id="notesGrid"></div>
+    </main>
+  </div>
+</div>
+
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let allNotes = [];
+  let activeCategory = 'all';
+
+  function driveDownloadUrl(url) {
+    if (!url) return '#';
+    if (url.includes('uc?export=download')) return url;
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) return 'https://drive.google.com/uc?export=download&id=' + match[1];
+    return url;
+  }
+
+  function setCategory(cat, btn) {
+    activeCategory = cat;
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const titles = { 'all': 'All Resources', 'Liberian Curriculum': 'Liberian Curriculum', 'Past WAEC Questions': 'Past WAEC Questions' };
+    document.getElementById('pageTitle').textContent = titles[cat] || 'All Resources';
+    renderNotes();
+  }
+
+  function getFiltered() {
+    const q     = document.getElementById('searchInput').value.toLowerCase();
+    const subj  = document.getElementById('subjectFilter').value.toLowerCase();
+    const grade = document.getElementById('gradeFilter').value.toLowerCase();
+    const price = document.getElementById('priceFilter').value;
+    const prem  = document.getElementById('premiumOnly').checked;
+    const sort  = document.getElementById('sortFilter').value;
+
+    let list = allNotes.filter(n => {
+      if (activeCategory !== 'all' && n.category !== activeCategory) return false;
+      if (q     && !n.title.toLowerCase().includes(q) && !(n.subject||'').toLowerCase().includes(q)) return false;
+      if (subj  && !(n.subject||'').toLowerCase().includes(subj)) return false;
+      if (grade && !(n.grade||'').toLowerCase().includes(grade)) return false;
+      if (prem  && !n.is_premium) return false;
+      if (price) {
+        if (price === 'free') { if ((n.price||0) !== 0) return false; }
+        else {
+          const [lo, hi] = price.split('-').map(Number);
+          if ((n.price||0) < lo || (n.price||0) > hi) return false;
+        }
+      }
+      return true;
+    });
+
+    if (sort === 'popular')    list.sort((a,b) => (b.downloads||0) - (a.downloads||0));
+    if (sort === 'price-asc')  list.sort((a,b) => (a.price||0) - (b.price||0));
+    if (sort === 'price-desc') list.sort((a,b) => (b.price||0) - (a.price||0));
+    if (sort === 'newest')     list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+    return list;
+  }
+
+  function renderNotes() {
+    const list = getFiltered();
+    const grid = document.getElementById('notesGrid');
+    document.getElementById('resultsCount').textContent = list.length + ' resource' + (list.length !== 1 ? 's' : '') + ' found';
+
+    if (list.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>No resources found</h3><p>Try adjusting your filters or check back soon</p></div>';
+      return;
+    }
+
+    grid.innerHTML = list.map(n => {
+      const isFree = !n.price || n.price === 0;
+      const isWAEC = n.category === 'Past WAEC Questions';
+
+      const priceLabel = isFree
+        ? '<span style="color:var(--sage);font-family:var(--font-mono);font-size:18px;font-weight:700">Free</span>'
+        : '<span class="note-price">L$' + n.price + '</span>';
+
+      const actionBtn = isFree
+        ? '<button class="btn btn--primary btn--sm" data-nid="' + n.id + '" data-url="' + driveDownloadUrl(n.file_url) + '" onclick="downloadNote(this)">⬇ Download Free</button>'
+        : '<button class="btn btn--ghost btn--sm" onclick="TH.toast(&quot;Paid resources coming soon! 🚀&quot;)" style="cursor:pointer;opacity:.7;border:1.5px dashed var(--border)">🔒 Coming Soon</button>';
+
+      const coverHtml = n.cover_url
+        ? '<img src="' + n.cover_url + '" class="note-cover" alt="' + n.title + '"/>'
+        : '<div class="note-cover-placeholder ' + (isWAEC ? 'cover-waec' : 'cover-curriculum') + '">' + (isWAEC ? '📝' : '📖') + '</div>';
+
+      const catBadge = isWAEC
+        ? '<span class="badge" style="background:var(--amber);color:#fff">📝 WAEC</span>'
+        : '<span class="badge badge--sage">🇱🇷 Curriculum</span>';
+
+      return (
+        '<article class="card ' + (n.is_premium ? 'card--premium' : '') + ' note-card">' +
+          coverHtml +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">' +
+            '<div class="note-meta" style="margin-bottom:0">' +
+              '<span class="tag">' + (n.subject||'') + '</span>' +
+              '<span class="tag">' + (n.grade||'') + '</span>' +
+            '</div>' +
+            catBadge +
+          '</div>' +
+          '<h3>' + n.title + '</h3>' +
+          '<p>' + (n.preview||'') + '</p>' +
+          '<p class="note-downloads">📥 ' + (n.downloads||0) + ' downloads</p>' +
+          '<div class="note-footer">' +
+            priceLabel +
+            actionBtn +
+          '</div>' +
+        '</article>'
+      );
+    }).join('');
+  }
+
+  function clearFilters() {
+    document.getElementById('searchInput').value   = '';
+    document.getElementById('subjectFilter').value = '';
+    document.getElementById('gradeFilter').value   = '';
+    document.getElementById('priceFilter').value   = '';
+    document.getElementById('premiumOnly').checked = false;
+    renderNotes();
+  }
+
+  function downloadNote(btn) {
+    const u = JSON.parse(sessionStorage.getItem('th_user') || 'null');
+    if (!u) {
+      TH.toast("Please log in or sign up to download — it's free!");
+      setTimeout(() => TH.openModal('loginModal'), 700);
+      return;
+    }
+    const nid = btn.getAttribute('data-nid');
+    const url = btn.getAttribute('data-url');
+    incrementDownload(nid);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  async function incrementDownload(id) {
+    const note = allNotes.find(n => n.id === id);
+    if (!note) return;
+    await db.from('examvault').update({ downloads: (note.downloads||0) + 1 }).eq('id', id);
+    note.downloads = (note.downloads||0) + 1;
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('notesGrid').innerHTML =
+      '<div class="empty-state"><p style="color:var(--muted)">Loading resources…</p></div>';
+
+    const { data, error } = await db
+      .from('examvault')
+      .select('*')
+      .order('downloads', { ascending: false });
+
+    if (error) {
+      document.getElementById('notesGrid').innerHTML =
+        '<div class="empty-state"><p style="color:var(--muted)">Could not load resources. Please try again.</p></div>';
+      return;
+    }
+
+    allNotes = data || [];
+    renderNotes();
+  });
+</script>
+</body>
+</html>
